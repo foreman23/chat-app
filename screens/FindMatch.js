@@ -31,9 +31,8 @@ export default function FindMatch({ navigation }) {
     navigation.push('Settings');
   }
 
-
   return (
-    <View>
+    <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.headerBar}>
         <Text style={{ fontSize: 18, fontWeight: 500 }}>Bliinder</Text>
@@ -43,7 +42,7 @@ export default function FindMatch({ navigation }) {
       </View>
 
       <View style={styles.matchContainer}>
-        <ScrollView horizontal>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {matchArr.map((match, index) => {
           return (
             <View style={styles.matchStory} key={index}>
@@ -90,13 +89,6 @@ export default function FindMatch({ navigation }) {
       <TouchableOpacity style={styles.matchButtonContainer}>
         <Text style={styles.matchButton}>Find New Match</Text>
       </TouchableOpacity>
-
-      {/* <View style={styles.navBottom}>
-        <Icon style={styles.navIconInactive} size={30} name='copy-outline'></Icon>
-        <Icon style={styles.navIconInactive} size={30} name='chatbubble-outline'></Icon>
-        <Icon style={styles.navIconActive} size={30} name='add-circle-outline'></Icon>
-        <Icon style={styles.navIconInactive} size={30} name='person-outline'></Icon>
-      </View> */}
     </View>
   );
 }
@@ -104,30 +96,7 @@ export default function FindMatch({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 50,
-  },
-  navBottom: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 15,
-    paddingTop: 15,
-    borderTopWidth: 2,
-    borderTopColor: '#E0E0E0',
-  },
-  navIconInactive: {
-    marginHorizontal: 25,
-    color: '#ACACAC',
-    padding: 5,
-    textAlign: 'center',
-  },
-  navIconActive: {
-    marginHorizontal: 25,
-    color: 'white',
-    padding: 5,
-    textAlign: 'center',
-    backgroundColor: '#439A97',
-    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
   },
   headerBar: {
     flexDirection: 'row',
@@ -156,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 32.5,
     paddingBottom: 20,
     marginHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   preferencesGender: {
     flexDirection: 'row',

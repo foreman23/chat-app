@@ -1,47 +1,29 @@
-import { StyleSheet, Text, View, Image, KeyboardAvoidingView, TextInput, FlatList, Touchable, TouchableOpacity, ScrollView } from 'react-native';
-import { useState } from 'react';
-import Navigator from './routes/homeStack';
-import TabNavigator from './routes/tabNavigator';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaView } from 'react-navigation';
+import Navigator from './routes/homeStack';
 
 export default function App() {
-
-  const [matchArr, setMatchArr] = useState(["Person1", "Person2", "Person3", "Person4", "Person5", "Person6", "Person6"]);
-
-  const [femaleSelected, setFemaleSelected] = useState(false);
-  const [maleSelected, setMaleSelected] = useState(false);
-  const [localSelected, setLocalSelected] = useState(false);
-  const [globalSelected, setGlobalSelected] = useState(false);
-
-  // THIS SHOULD BE CHANGED/DELETED LATER
-  const handleFemale = () => {
-    setFemaleSelected(!femaleSelected);
-  }
-  const handleMale = () => {
-    setMaleSelected(!maleSelected);
-  }
-  const handleLocal = () => {
-    setLocalSelected(!localSelected);
-  }
-  const handleGlobal = () => {
-    setGlobalSelected(!globalSelected);
-  }
-
   return (
-
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <NavigationContainer>
-        <Navigator></Navigator>
+        <View style={styles.contentContainer}>
+          <Navigator />
+        </View>
       </NavigationContainer>
-    </View>
-
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingTop: 50,
+    backgroundColor: '#FFFFFF',
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
 });

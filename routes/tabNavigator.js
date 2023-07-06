@@ -12,17 +12,19 @@ const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
     return (
         <Tab.Navigator
+            initialRouteName="FindMatch"
             screenOptions={({ route }) => ({
                 headerShown: false,
+                tabBarLabel: () => null,
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
 
                     if (route.name === 'Cards') {
-                        iconName = focused ? 'ios-information-circle' : 'ios-information-circle-outline';
+                        iconName = focused ? 'copy' : 'copy-outline';
                     } else if (route.name === 'Messages') {
-                        iconName = focused ? 'ios-list' : 'ios-list-outline';
+                        iconName = focused ? 'chatbubble' : 'chatbubble-outline';
                     } else if (route.name === 'FindMatch') {
-                        iconName = focused ? 'ios-search' : 'ios-search-outline';
+                        iconName = focused ? 'add-circle' : 'add-circle-outline';
                     } else if (route.name === 'Profile') {
                         iconName = focused ? 'ios-person' : 'ios-person-outline';
                     }
@@ -31,6 +33,10 @@ const TabNavigator = () => {
                 },
                 tabBarActiveTintColor: '#439A97',
                 tabBarInactiveTintColor: '#ACACAC',
+                tabBarStyle: {
+                    height: 85,
+                    backgroundColor: '#FFFFFF',
+                }
             })}
         >
             <Tab.Screen name="Cards" component={Cards} />
