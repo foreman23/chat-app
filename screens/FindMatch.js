@@ -36,7 +36,7 @@ export default function FindMatch({ navigation }) {
     <View>
       <StatusBar style="auto" />
       <View style={styles.headerBar}>
-        <Text style={{ fontSize: 18, fontWeight: 500 }}>Blynder</Text>
+        <Text style={{ fontSize: 18, fontWeight: 500 }}>Bliinder</Text>
         <TouchableOpacity onPress={handleSettings}>
           <Icon name='settings-outline' size={35} color={'#439A97'}></Icon>
         </TouchableOpacity>
@@ -91,13 +91,12 @@ export default function FindMatch({ navigation }) {
         <Text style={styles.matchButton}>Find New Match</Text>
       </TouchableOpacity>
 
-      <View style={styles.navBottom}>
+      {/* <View style={styles.navBottom}>
         <Icon style={styles.navIconInactive} size={30} name='copy-outline'></Icon>
         <Icon style={styles.navIconInactive} size={30} name='chatbubble-outline'></Icon>
         <Icon style={styles.navIconActive} size={30} name='add-circle-outline'></Icon>
         <Icon style={styles.navIconInactive} size={30} name='person-outline'></Icon>
-      </View>
-
+      </View> */}
     </View>
   );
 }

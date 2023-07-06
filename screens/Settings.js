@@ -6,7 +6,7 @@ import React from 'react'
 export default function Settings({ navigation }) {
 
     handleBack = () => {
-        navigation.pop();
+        navigation.goBack();
     }
 
     return (

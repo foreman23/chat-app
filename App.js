@@ -1,9 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image, KeyboardAvoidingView, TextInput, FlatList, Touchable, TouchableOpacity, ScrollView } from 'react-native';
 import { useState } from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
-import FindMatch from './screens/FindMatch';
 import Navigator from './routes/homeStack';
+import TabNavigator from './routes/tabNavigator';
+import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
 
@@ -29,9 +28,13 @@ export default function App() {
   }
 
   return (
+
     <View style={styles.container}>
-      <Navigator></Navigator>
+      <NavigationContainer>
+        <Navigator></Navigator>
+      </NavigationContainer>
     </View>
+
   );
 }
 
