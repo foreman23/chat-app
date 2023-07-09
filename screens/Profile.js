@@ -3,33 +3,24 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react
 import React from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { renderNode } from 'react-native-elements/dist/helpers';
+import ScreenHeader from '../components/ScreenHeader';
 
 export default function Profile({ navigation }) {
-
-    // Go to settings screen
-    const handleSettings = () => {
-        navigation.push('Settings');
-    }
 
     // List of interests
     const interests = ['Movies', 'Hiking', 'Reading', 'Gym', 'Writing', 'Fishing', 'Games']
     const renderItem = ({ item }) => {
         return (
-          <View>
-            <Text style={styles.interestItem}>{item}</Text>
-          </View>
+            <View>
+                <Text style={styles.interestItem}>{item}</Text>
+            </View>
         );
-      };
+    };
 
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
-            <View style={styles.headerBar}>
-                <Text style={{ fontSize: 18, fontWeight: 500 }}>Profile</Text>
-                <TouchableOpacity onPress={handleSettings}>
-                    <Icon name='settings-outline' size={35} color={'#439A97'}></Icon>
-                </TouchableOpacity>
-            </View>
+            <ScreenHeader navigation={navigation} title='Profile'></ScreenHeader>
             <View style={styles.profileImageContainer}>
                 <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
             </View>
@@ -58,7 +49,13 @@ export default function Profile({ navigation }) {
                     <Text style={{ color: '#439A97', fontSize: 12, fontWeight: '600' }}>See All</Text>
                 </View>
                 <View style={styles.interests}>
-                    <FlatList data={interests} renderItem={renderItem} key={'+'} keyExtractor={(item) => "+" + item.id} numColumns={4}></FlatList>
+                    <FlatList data={interests}
+                        renderItem={renderItem}
+                        key={'+'}
+                        keyExtractor={(item) => "+" + item.id}
+                        numColumns={4}
+                        contentContainerStyle={styles.listContainer}>
+                    </FlatList>
                 </View>
             </View>
 
@@ -103,17 +100,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#439A97',
         color: '#FFFFFF',
         marginHorizontal: 5,
+        marginVertical: 2,
         padding: 10,
         paddingHorizontal: 15,
-        borderRadius: 32.5, 
+        borderRadius: 32.5,
         fontSize: 12,
-    },
-    headerBar: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        marginBottom: 10,
-        marginTop: 10,
     },
     profileNameContainer: {
         justifyContent: 'center',
@@ -134,6 +125,8 @@ const styles = StyleSheet.create({
         color: '#439A97',
         fontWeight: 'bold',
     },
-
-
+    listContainer: {
+        flexDirection: 'column',
+        marginBottom: 15,
+      },
 })

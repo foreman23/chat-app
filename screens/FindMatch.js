@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import ScreenHeader from '../components/ScreenHeader';
 
 export default function FindMatch({ navigation }) {
 
@@ -26,20 +27,10 @@ export default function FindMatch({ navigation }) {
     setGlobalSelected(!globalSelected);
   }
 
-  // Go to settings screen
-  const handleSettings = () => {
-    navigation.push('Settings');
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <View style={styles.headerBar}>
-        <Text style={{ fontSize: 18, fontWeight: 500 }}>Bliinder</Text>
-        <TouchableOpacity onPress={handleSettings}>
-          <Icon name='settings-outline' size={35} color={'#439A97'}></Icon>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader navigation={navigation} title='App Name'></ScreenHeader>
 
       <View style={styles.matchContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -97,13 +88,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    marginTop: 10,
   },
   matchContainer: {
     flexDirection: 'row',
