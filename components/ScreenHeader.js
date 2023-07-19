@@ -13,7 +13,7 @@ const ScreenHeader = (props) => {
         <View style={styles.headerBar}>
             <Text style={{ fontSize: 18, fontWeight: 500 }}>{props.title}</Text>
             <Pressable hitSlop={10} onPress={handleSettings}>
-                <Icon style={styles.icon} name='settings-outline' size={25} color={'#439A97'}></Icon>
+                <Icon style={styles.icon} name='settings-outline' size={25} color={'#5A8F7B'}></Icon>
             </Pressable>
         </View>
     )

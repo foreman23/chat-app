@@ -31,7 +31,7 @@ const TabNavigator = () => {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: '#439A97',
+                tabBarActiveTintColor: '#5A8F7B',
                 tabBarInactiveTintColor: '#ACACAC',
                 tabBarStyle: {
                     height: 85,

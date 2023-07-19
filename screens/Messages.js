@@ -15,8 +15,8 @@ export default function Messages({ navigation }) {
     { id: '4', name: 'Alex Johnson', message: 'Hey, do you have the project files?', status: 'Delivered', hoursSince: 12, hoursLeft: null },
     { id: '5', name: 'Sarah Thompson', message: 'Can you please call me back?', status: 'Sent', hoursSince: 0, hoursLeft: 48 },
     { id: '6', name: 'Michael Brown', message: 'Let\'s grab lunch next week.', status: 'Delivered', hoursSince: 1, hoursLeft: null },
-    { id: '7', name: 'Emma Davis', message: 'Have you seen the latest episode?', status: 'Read', hoursSince: 3, hoursLeft: null },
-    { id: '8', name: 'David Wilson', message: 'I need your help with the presentation.', status: 'Sent', hoursSince: 0, hoursLeft: 12 },
+    { id: '7', name: 'Emma Davis', message: 'Have you seen the latest episode? It was really great.', status: 'Read', hoursSince: 3, hoursLeft: null },
+    { id: '8', name: 'David Wilson', message: 'I need your help with the presentation. Please respond when you can.', status: 'Sent', hoursSince: 0, hoursLeft: 12 },
     { id: '9', name: 'Olivia Martin', message: 'Happy birthday! Let\'s celebrate.', status: 'Delivered', hoursSince: 24, hoursLeft: null },
   ];
 
@@ -26,21 +26,29 @@ export default function Messages({ navigation }) {
     textInputRef.current.focus();
   };
 
+  // Go to messenger from message click
+  const handleClick = (item) => {
+    navigation.push('Messenger', { prop: item });
+  }
+
   // Render message group
   const renderItem = ({ item }) => {
     return (
-      <TouchableOpacity style={styles.messageGroup}>
-        <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
-
-        <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
-          <Text style={{ color: '#439A97', fontSize: 14, fontWeight: '600' }}>{item.name}</Text>
-          <Text style={{ color: '#323232', fontSize: 12, }}>{item.message}</Text>
+      <TouchableOpacity onPress={() => handleClick(item)} style={styles.messageGroup}>
+        <View style={{ flex: 1 }}>
+          <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
         </View>
 
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ color: '#439A97', fontSize: 12, fontWeight: '400', paddingRight: 5, marginTop: 18 }}>{item.status}</Text>
-          <Icon size={5} style={{ marginTop: 24 }} name='ellipse-sharp' color='#439A97'></Icon>
-          <Text style={{ color: '#439A97', fontSize: 12, fontWeight: '400', paddingLeft: 5, marginTop: 18 }}>{item.hoursSince} hr</Text>
+        {/* Message Content */}
+        <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', borderWidth: 0, flex: 3, marginLeft: 5 }}>
+          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item.name}</Text>
+          <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.message}</Text>
+        </View>
+
+        <View style={{ flexDirection: 'column', borderWidth: 0, flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 6 }}>
+          <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingRight: 5 }}>{item.status}</Text>
+          <Icon size={4} style={{ marginVertical: 5 }} name='ellipse-sharp' color='#5A8F7B'></Icon>
+          <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingLeft: 5 }}>{item.hoursSince} hr</Text>
         </View>
 
       </TouchableOpacity>
@@ -63,10 +71,10 @@ export default function Messages({ navigation }) {
         </View>
         <TouchableOpacity style={{ alignItems: 'center', justifyContent: 'center' }} underlayColor='transparent'>
           <View>
-            <Icon name="search" size={20} color="#439A97" />
+            <Icon name="search" size={20} color="#5A8F7B" />
           </View>
         </TouchableOpacity>
-        
+
       </Pressable>
 
       <View style={styles.messageList}>
@@ -91,7 +99,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 55,
     height: 55,
-    borderColor: '#439A97',
+    borderColor: '#5A8F7B',
     borderWidth: 1.5,
     borderRadius: 30,
   },

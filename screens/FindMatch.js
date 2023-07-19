@@ -30,7 +30,7 @@ export default function FindMatch({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <ScreenHeader navigation={navigation} title='App Name'></ScreenHeader>
+      <ScreenHeader navigation={navigation} title='Tangoh'></ScreenHeader>
 
       <View style={styles.matchContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -131,33 +131,33 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     marginBottom: 10, 
     marginTop: 10,
-    color: '#439A97',
+    color: '#5A8F7B',
   },
   inactiveText: {
     textAlign: 'center',
     fontSize: 14,
-    color: '#439A97',
+    color: '#5A8F7B',
   },
   selectorBoxInActive: {
     borderWidth: 1,
-    borderColor: '#439A97',
+    borderColor: '#5A8F7B',
     paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 25,
   },
   selectorBoxActive: {
     borderWidth: 1,
-    borderColor: '#439A97',
+    borderColor: '#5A8F7B',
     paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 25,
-    backgroundColor: '#439A97',
+    backgroundColor: '#5A8F7B',
   },
   matchButtonContainer: {
     marginHorizontal: 20,
     marginTop: 5,
     borderRadius: 32.5,
-    backgroundColor: '#439A97',
+    backgroundColor: '#5A8F7B',
   },
   matchButton: {
     color: 'white',

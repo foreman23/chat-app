@@ -4,6 +4,7 @@ import React from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { renderNode } from 'react-native-elements/dist/helpers';
 import ScreenHeader from '../components/ScreenHeader';
+import { auth } from '../firebase';
 
 export default function Profile({ navigation }) {
 
@@ -25,7 +26,7 @@ export default function Profile({ navigation }) {
                 <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
             </View>
             <View style={styles.profileNameContainer}>
-                <Text style={{ fontSize: 18, color: '#323232' }}>William Joe</Text>
+                <Text style={{ fontSize: 18, color: '#323232' }}>{auth.currentUser?.email}</Text>
             </View>
 
             <View style={styles.bioBar}>
@@ -46,7 +47,7 @@ export default function Profile({ navigation }) {
             <View style={styles.interestsContainer}>
                 <View style={styles.interestBar}>
                     <Text>Interests</Text>
-                    <Text style={{ color: '#439A97', fontSize: 12, fontWeight: '600' }}>See All</Text>
+                    <Text style={{ color: '#5A8F7B', fontSize: 12, fontWeight: '600' }}>See All</Text>
                 </View>
                 <View style={styles.interests}>
                     <FlatList data={interests}
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     interestItem: {
-        backgroundColor: '#439A97',
+        backgroundColor: '#5A8F7B',
         color: '#FFFFFF',
         marginHorizontal: 5,
         marginVertical: 2,
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
         height: 140,
     },
     greenText: {
-        color: '#439A97',
+        color: '#5A8F7B',
         fontWeight: 'bold',
     },
     listContainer: {
