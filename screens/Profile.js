@@ -1,12 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native'
+import { React, useState, useEffect } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { renderNode } from 'react-native-elements/dist/helpers';
 import ScreenHeader from '../components/ScreenHeader';
 import { auth } from '../firebase';
+import { firestore } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default function Profile({ navigation }) {
+
+    const [userInfo, setUserInfo] = useState(null);
+
+    const [userDisplayAge, setUserDisplayAge] = useState(null);
 
     // List of interests
     const interests = ['Movies', 'Hiking', 'Reading', 'Gym', 'Writing', 'Fishing', 'Games']
@@ -18,6 +24,37 @@ export default function Profile({ navigation }) {
         );
     };
 
+    // Get firestore user info from authenticated email
+    const readUserData = async () => {
+        try {
+            const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                // Update the userInfo state with docSnap.data()
+                setUserInfo(docSnap.data());
+            } else {
+                console.log("Document does not exist!");
+            }
+        } catch (error) {
+            console.error("Error fetching document: ", error);
+        }
+    };
+
+    useEffect(() => {
+        // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
+        readUserData();
+        console.log(userInfo)
+    }, [auth.currentUser?.email]);
+
+    if (userInfo === null) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+            </View>
+        )
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
@@ -26,22 +63,22 @@ export default function Profile({ navigation }) {
                 <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
             </View>
             <View style={styles.profileNameContainer}>
-                <Text style={{ fontSize: 18, color: '#323232' }}>{auth.currentUser?.email}</Text>
+                <Text style={{ fontSize: 18, color: '#323232' }}>{userInfo.name}</Text>
             </View>
 
             <View style={styles.bioBar}>
                 <Text>Age</Text>
-                <Text style={styles.greenText}>22</Text>
+                <Text style={styles.greenText}>{userInfo.birthdate.toLocaleString()}</Text>
             </View>
 
             <View style={styles.bioBar}>
                 <Text>Gender</Text>
-                <Text style={styles.greenText}>Male</Text>
+                <Text style={styles.greenText}>{userInfo.gender}</Text>
             </View>
 
             <View style={styles.bioBar}>
                 <Text>Location</Text>
-                <Text style={styles.greenText}>Los Angeles, CA</Text>
+                <Text style={styles.greenText}>{userInfo.country}</Text>
             </View>
 
             <View style={styles.interestsContainer}>
@@ -68,6 +105,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+    },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
     },
     bioBar: {
         flexDirection: 'row',
@@ -129,5 +171,5 @@ const styles = StyleSheet.create({
     listContainer: {
         flexDirection: 'column',
         marginBottom: 15,
-      },
+    },
 })

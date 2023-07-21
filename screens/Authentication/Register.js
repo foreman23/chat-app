@@ -1,7 +1,10 @@
 import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback } from 'react-native'
-import { React, useState } from 'react'
+import { React, useContext, useState } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
-import { auth } from '../../firebase';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import ProgressBar from 'react-native-progress/Bar';
+import { UserContext } from '../Context/UserContext';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 const Register = ({ navigation }) => {
 
@@ -11,9 +14,15 @@ const Register = ({ navigation }) => {
 
     const [error, setError] = useState('');
 
+    const auth = getAuth();
+
+    // Grab UserContext
+    const {userInfo, setUserInfo} = useContext(UserContext);
+
+    // Grab firestore
+    const firestore = getFirestore();
+
     const handleSignUp = () => {
-        console.log(password)
-        console.log(confirmPassword)
         // Check passwords match
         if (password !== confirmPassword) {
             setError('Passwords do not match, please try again');
@@ -32,15 +41,29 @@ const Register = ({ navigation }) => {
             }
             // Create a new firebase user with credentials
             else {
-                auth.createUserWithEmailAndPassword(email, confirmPassword)
+                createUserWithEmailAndPassword(auth, email, confirmPassword)
                     .then(userCredentials => {
                         const user = userCredentials.user;
+                        // Push userInfo to firestore
+                        writeUserInfo(email);
                     })
                     .catch(error => alert(error.message));
             }
         }
     }
 
+    // Helper for write userInfo to firestore
+    async function writeUserInfo(email) {
+        try {
+            const docRef = doc(firestore, 'userInfo', email.toLowerCase());
+            await setDoc(docRef, userInfo);
+            console.log('User info written to firestore');
+        } catch (error) {
+            console.error('Error writing info to firestore', error);
+        }
+    }
+
+    // Navigate to last page
     handleBack = () => {
         navigation.goBack();
     }
@@ -50,18 +73,21 @@ const Register = ({ navigation }) => {
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                 <View>
                     <StatusBar style="auto" />
+                    <ProgressBar style={styles.progressStyle} progress={.95} color='#5A8F7B'></ProgressBar>
                     <View style={styles.headerBar}>
                         <TouchableOpacity onPress={handleBack}>
                             <Icon size={30} name='chevron-back'></Icon>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.inputContainer}>
+                        <Text style={styles.headerText}>Email</Text>
                         <TextInput
                             style={styles.input}
                             placeholder='Email'
                             onChangeText={text => setEmail(text)}
                         >
                         </TextInput>
+                        <Text style={styles.headerText}>Password</Text>
                         <TextInput
                             style={styles.input}
                             secureTextEntry
@@ -69,6 +95,7 @@ const Register = ({ navigation }) => {
                             onChangeText={text => setPassword(text)}
                         >
                         </TextInput>
+                        <Text style={styles.headerText}>Confirm password</Text>
                         <TextInput
                             style={styles.input}
                             secureTextEntry
@@ -108,6 +135,10 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         color: 'red',
     },
+    progressStyle: {
+        marginVertical: 10,
+        alignSelf: 'center',
+    },
     title: {
         textAlign: 'center',
         marginBottom: 30,
@@ -123,13 +154,16 @@ const styles = StyleSheet.create({
         fontWeight: 400,
         color: '#5c5b5b',
     },
+    headerText: {
+        marginLeft: 10,
+    },
     highlight: {
         color: '#5A8F7B',
         fontWeight: 800,
     },
     buttonContainer: {
         marginHorizontal: 25,
-        marginTop: 5,
+        marginTop: 20,
         borderRadius: 12.5,
         backgroundColor: '#5A8F7B',
     },
@@ -148,7 +182,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         textAlign: 'center',
         marginHorizontal: 25,
-        marginTop: 165,
+        marginTop: 115,
     },
     input: {
         justifyContent: 'center',

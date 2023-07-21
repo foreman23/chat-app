@@ -34,6 +34,7 @@ export default function Settings({ navigation }) {
                     <View style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='key-outline'></Icon><Text style={styles.textText}>Privacy</Text></View>
                     <View style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='ios-heart-dislike-outline'></Icon><Text style={styles.textText}>Blocked Users</Text></View>
                     <View style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='ios-card-outline'></Icon><Text style={styles.textText}>Payment</Text></View>
+                    <View style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='lock-closed-outline'></Icon><Text style={styles.textText}>Change Password</Text></View>
                 </View>
                 <Text style={styles.headerText}>General</Text>
                 <View style={styles.headerContainer}>

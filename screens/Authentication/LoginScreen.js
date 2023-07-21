@@ -1,17 +1,29 @@
-import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback } from 'react-native'
+import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import { React, useState, useEffect } from 'react'
-import { auth } from '../../firebase';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginScreen = ({ navigation }) => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Retrieve auth status
+    const auth = getAuth();
 
     // Bypass login screen if user logged in
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
+            console.log('current user: ', user)
+            // User initial sign in
             if (user) {
-                navigation.replace('Main')
+                //console.log("current user: ", user);
+                navigation.replace('Main');
+            }
+            // If no current user
+            else {
+                setIsLoading(false);
+                //console.log("current user ELSE: ", user);
             }
         })
 
@@ -19,15 +31,24 @@ const LoginScreen = ({ navigation }) => {
     }, [])
 
     const handleSignUp = () => {
-        navigation.push('Register');
+        navigation.push('InitProfile');
     }
 
     const handleLogin = () => {
-        auth.signInWithEmailAndPassword(email, password)
-        .then(userCredentials => {
-            const user = userCredentials.user;
-        })
-        .catch(error => alert(error.message));
+        signInWithEmailAndPassword(auth, email, password)
+            .then(userCredentials => {
+                const user = userCredentials.user;
+            })
+            .catch(error => alert(error.message));
+    }
+
+    if (isLoading) {
+        // Loading screen JSX
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+            </View>
+        );
     }
 
     return (
@@ -39,17 +60,17 @@ const LoginScreen = ({ navigation }) => {
                         <Text style={styles.title}>Tangoh</Text>
                     </View>
                     <View style={styles.inputContainer}>
-                        <TextInput 
-                        style={styles.input}
-                        placeholder='Email'
-                        onChangeText={text => setEmail(text)}                        
+                        <TextInput
+                            style={styles.input}
+                            placeholder='Email'
+                            onChangeText={text => setEmail(text)}
                         >
                         </TextInput>
-                        <TextInput 
-                        style={styles.input} 
-                        secureTextEntry 
-                        placeholder='Password'
-                        onChangeText={text => setPassword(text)}         
+                        <TextInput
+                            style={styles.input}
+                            secureTextEntry
+                            placeholder='Password'
+                            onChangeText={text => setPassword(text)}
                         >
                         </TextInput>
                     </View>
@@ -84,6 +105,11 @@ const styles = StyleSheet.create({
         fontSize: 40,
         fontWeight: 600,
         color: '#323232',
+    },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
     },
     signUp: {
         textAlign: 'center',
