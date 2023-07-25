@@ -1,15 +1,46 @@
 import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Pressable, TextInput } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import { React, useState } from 'react'
+import { React, useState, useContext } from 'react'
 import BackButton from '../../components/BackButton';
 import LargeButton from '../../components/LargeButton';
+import { UserContext } from '../Context/UserContext';
+import { auth, firestore } from '../../firebase';
+import { updateDoc, doc, getFirestore } from 'firebase/firestore';
 
 const ChangeGender = ({ navigation }) => {
 
-    const [maleSelected, setMaleSelected] = useState(true);
-    const [femaleSelected, setFemaleSelected] = useState(false);
-    const [nonBinarySelected, setNonBinarySelected] = useState(false);
-    const [selectedGender, setSelectedGender] = useState('Male');
+    // Grab UserContext
+    const {userInfo, setUserInfo} = useContext(UserContext);
+    // Grab firestore
+    const firestore = getFirestore();
+
+    const [maleSelected, setMaleSelected] = useState(userInfo.gender === 'Male');
+    const [femaleSelected, setFemaleSelected] = useState(userInfo.gender === 'Female');
+    const [nonBinarySelected, setNonBinarySelected] = useState(userInfo.gender === 'Nonbinary');
+    const [selectedGender, setSelectedGender] = useState(userInfo.gender);
+
+    
+    // Handle submit form
+    const handleSubmit = () => {
+        updateUserInfo();
+    }
+    
+    // Update user information to firestore
+    async function updateUserInfo() {
+        try {
+            // Update firestore db with new gender
+            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+            await updateDoc(docRef, {
+                gender: selectedGender
+            })
+            console.log("WRITTEN to firestore")
+            // Update userContext
+            await setUserInfo((prevUser) => ({ ...prevUser, gender: selectedGender }));
+            navigation.goBack();
+        } catch (error) {
+            console.error('Error updating gender info to firestore', error);
+        }
+    }
 
     const handleFemale = () => {
         setFemaleSelected(true);
@@ -62,8 +93,7 @@ const ChangeGender = ({ navigation }) => {
                     <Text style={[styles.inactiveText, nonBinarySelected && styles.activeText]}>Nonbinary</Text>
                 </TouchableOpacity>
             </View>
-
-            <LargeButton title='Submit Changes'></LargeButton>
+            <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
         </View>
     )
 }

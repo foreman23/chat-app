@@ -3,7 +3,7 @@ import React from 'react'
 
 const LargeButton = (props) => {
     return (
-        <TouchableOpacity style={styles.matchButtonContainer}>
+        <TouchableOpacity onPress={props.function} style={styles.matchButtonContainer}>
             <Text style={styles.matchButton}>{props.title}</Text>
         </TouchableOpacity>
     )

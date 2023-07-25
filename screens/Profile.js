@@ -1,17 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator, ImageBackground } from 'react-native'
-import { React, useState, useEffect } from 'react'
+import { React, useState, useEffect, useContext } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { renderNode } from 'react-native-elements/dist/helpers';
 import ScreenHeader from '../components/ScreenHeader';
 import { auth } from '../firebase';
 import { firestore } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { UserContext } from './Context/UserContext';
 
 export default function Profile({ navigation }) {
 
-    const [userInfo, setUserInfo] = useState(null);
+    const {userInfo, setUserInfo} = useContext(UserContext);
     const [userDisplayAge, setUserDisplayAge] = useState(null);
+
 
     // Go to change name screen
     const navigateChangeName = () => {
@@ -75,6 +77,7 @@ export default function Profile({ navigation }) {
 
     useEffect(() => {
         // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
+        console.log("READING user state from firestore:")
         readUserData();
     }, [auth.currentUser?.email]);
 

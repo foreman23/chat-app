@@ -1,19 +1,51 @@
 import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Pressable, TextInput } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React from 'react'
+import { React, useContext, useState } from 'react'
 import BackButton from '../../components/BackButton';
 import LargeButton from '../../components/LargeButton';
+import { UserContext } from '../Context/UserContext';
+import { auth, firestore } from '../../firebase';
+import { updateDoc, doc, getFirestore } from 'firebase/firestore';
 
 const ChangeName = ({ navigation }) => {
+
+    // Grab UserContext
+    const { userInfo, setUserInfo } = useContext(UserContext);
+    // Grab firestore
+    const firestore = getFirestore();
+
+    const [selectedName, setSelectedName] = useState(userInfo.name);
+
+    // Handle submit form
+    const handleSubmit = () => {
+        updateUserInfo();
+    }
+
+    // Update user information to firestore
+    async function updateUserInfo() {
+        try {
+            // Update firestore db with new name
+            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+            await updateDoc(docRef, {
+                name: selectedName
+            })
+            console.log("WRITTEN to firestore")
+            // Update userContext
+            await setUserInfo((prevUser) => ({ ...prevUser, name: selectedName }));
+            navigation.goBack();
+        } catch (error) {
+            console.error('Error updating name info to firestore', error);
+        }
+    }
 
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
             <BackButton navigation={navigation}></BackButton>
             <View style={styles.inputContainer}>
-                <TextInput placeholder='Name'></TextInput>
+                <TextInput onChangeText={text => setSelectedName(text)} defaultValue={userInfo.name}></TextInput>
             </View>
-            <LargeButton title='Submit Changes'></LargeButton>
+            <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
         </View>
     )
 }
