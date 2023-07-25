@@ -14,7 +14,6 @@ const LoginScreen = ({ navigation }) => {
     // Bypass login screen if user logged in
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
-            console.log('current user: ', user)
             // User initial sign in
             if (user) {
                 //console.log("current user: ", user);

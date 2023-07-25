@@ -9,12 +9,22 @@ const ScreenHeader = (props) => {
         props.navigation.push('Settings');
     }
 
+    // Go to friends screen
+    const handleFriends = () => {
+        props.navigation.push('FriendsList');
+    }
+
     return (
         <View style={styles.headerBar}>
             <Text style={{ fontSize: 18, fontWeight: 500 }}>{props.title}</Text>
-            <Pressable hitSlop={10} onPress={handleSettings}>
-                <Icon style={styles.icon} name='settings-outline' size={25} color={'#5A8F7B'}></Icon>
-            </Pressable>
+            <View style={{ flexDirection: 'row' }}>
+                <Pressable hitSlop={10} onPress={handleFriends}>
+                    <Icon style={styles.icon} name='people-outline' size={25} color={'#5A8F7B'}></Icon>
+                </Pressable>
+                <Pressable hitSlop={10} onPress={handleSettings}>
+                    <Icon style={styles.icon} name='settings-outline' size={25} color={'#5A8F7B'}></Icon>
+                </Pressable>
+            </View>
         </View>
     )
 }
@@ -37,6 +47,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         justifyContent: 'center',
         borderRadius: 18,
+        marginHorizontal: 5,
         padding: 4,
     },
 })

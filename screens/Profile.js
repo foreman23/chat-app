@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator, ImageBackground } from 'react-native'
 import { React, useState, useEffect } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { renderNode } from 'react-native-elements/dist/helpers';
@@ -11,8 +11,27 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 export default function Profile({ navigation }) {
 
     const [userInfo, setUserInfo] = useState(null);
-
     const [userDisplayAge, setUserDisplayAge] = useState(null);
+
+    // Go to change name screen
+    const navigateChangeName = () => {
+        navigation.push('ChangeName');
+    }
+
+    // Go to change gender screen
+    const navigateChangeGender = () => {
+        navigation.push('ChangeGender');
+    }
+
+    // Go to change location screen
+    const navigateChangeLocation = () => {
+        navigation.push('ChangeLocation');
+    }
+
+    // Go to friends screen
+    const navigateFriends = () => {
+        navigation.push('FriendsList');
+    }
 
     // List of interests
     const interests = ['Movies', 'Hiking', 'Reading', 'Gym', 'Writing', 'Fishing', 'Games']
@@ -33,6 +52,19 @@ export default function Profile({ navigation }) {
             if (docSnap.exists()) {
                 // Update the userInfo state with docSnap.data()
                 setUserInfo(docSnap.data());
+                const currentDate = new Date();
+                const userBirthdate = new Date(docSnap.data().birthdate.seconds * 1000);
+                age = currentDate.getUTCFullYear() - userBirthdate.getUTCFullYear();
+                // Check if the birthday has occurred this year or not
+                if (
+                    currentDate.getUTCMonth() < userBirthdate.getUTCMonth() ||
+                    (currentDate.getUTCMonth() === userBirthdate.getUTCMonth() &&
+                        currentDate.getUTCDate() < userBirthdate.getUTCDate())
+                ) {
+                    // If the birthday hasn't occurred yet, subtract 1 from the age
+                    age--;
+                }
+                setUserDisplayAge(age);
             } else {
                 console.log("Document does not exist!");
             }
@@ -44,7 +76,6 @@ export default function Profile({ navigation }) {
     useEffect(() => {
         // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
         readUserData();
-        console.log(userInfo)
     }, [auth.currentUser?.email]);
 
     if (userInfo === null) {
@@ -60,28 +91,32 @@ export default function Profile({ navigation }) {
             <StatusBar style="auto" />
             <ScreenHeader navigation={navigation} title='Profile'></ScreenHeader>
             <View style={styles.profileImageContainer}>
-                <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+                <TouchableOpacity>
+                    <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+                </TouchableOpacity>
             </View>
             <View style={styles.profileNameContainer}>
-                <Text style={{ fontSize: 18, color: '#323232' }}>{userInfo.name}</Text>
+                <TouchableOpacity onPress={navigateChangeName}>
+                    <Text style={{ fontSize: 18, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userDisplayAge}</Text></Text>
+                </TouchableOpacity>
             </View>
 
-            <View style={styles.bioBar}>
-                <Text>Age</Text>
-                <Text style={styles.greenText}>{userInfo.birthdate.toLocaleString()}</Text>
-            </View>
+            <TouchableOpacity onPress={navigateFriends} style={styles.bioBar}>
+                <Text>Friends</Text>
+                <Text style={styles.greenText}>117</Text>
+            </TouchableOpacity>
 
-            <View style={styles.bioBar}>
+            <TouchableOpacity onPress={navigateChangeGender} style={styles.bioBar}>
                 <Text>Gender</Text>
                 <Text style={styles.greenText}>{userInfo.gender}</Text>
-            </View>
+            </TouchableOpacity>
 
-            <View style={styles.bioBar}>
+            <TouchableOpacity onPress={navigateChangeLocation} style={styles.bioBar}>
                 <Text>Location</Text>
                 <Text style={styles.greenText}>{userInfo.country}</Text>
-            </View>
+            </TouchableOpacity>
 
-            <View style={styles.interestsContainer}>
+            <TouchableOpacity style={styles.interestsContainer}>
                 <View style={styles.interestBar}>
                     <Text>Interests</Text>
                     <Text style={{ color: '#5A8F7B', fontSize: 12, fontWeight: '600' }}>See All</Text>
@@ -95,7 +130,7 @@ export default function Profile({ navigation }) {
                         contentContainerStyle={styles.listContainer}>
                     </FlatList>
                 </View>
-            </View>
+            </TouchableOpacity>
 
         </View>
     )
@@ -165,6 +200,10 @@ const styles = StyleSheet.create({
         height: 140,
     },
     greenText: {
+        color: '#5A8F7B',
+        fontWeight: 'bold',
+    },
+    greenTextAge: {
         color: '#5A8F7B',
         fontWeight: 'bold',
     },

@@ -9,6 +9,11 @@ import Register from '../screens/Authentication/Register';
 import InitProfile from '../screens/Authentication/InitProfile';
 import InitProfile2 from '../screens/Authentication/InitProfile2';
 import InitProfile3 from '../screens/Authentication/InitProfile3';
+import FriendsList from '../screens/Friends/FriendsList';
+import AddFriend from '../screens/Friends/AddFriend';
+import ChangeName from '../screens/EditProfile/ChangeName';
+import ChangeGender from '../screens/EditProfile/ChangeGender';
+import ChangeLocation from '../screens/EditProfile/ChangeLocation';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +29,11 @@ function AppStack() {
             <Stack.Screen name="Main" component={TabNavigator}></Stack.Screen>
             <Stack.Screen name="Settings" component={Settings}></Stack.Screen>
             <Stack.Screen name="Messenger" component={Messenger}></Stack.Screen>
+            <Stack.Screen name="FriendsList" component={FriendsList}></Stack.Screen>
+            <Stack.Screen name="AddFriend" component={AddFriend}></Stack.Screen>
+            <Stack.Screen name="ChangeName" component={ChangeName}></Stack.Screen>
+            <Stack.Screen name="ChangeGender" component={ChangeGender}></Stack.Screen>
+            <Stack.Screen name="ChangeLocation" component={ChangeLocation}></Stack.Screen>
         </Stack.Navigator>
     )
 }
