@@ -56,6 +56,7 @@ const InitProfile = ({ navigation }) => {
                             style={styles.input}
                             placeholder='Enter first name'
                             keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
+                            autoCapitalize='words'
                             onChangeText={text => setName(text)}
                         >
                         </TextInput>

@@ -45,7 +45,12 @@ const ChangeName = ({ navigation }) => {
                     <StatusBar style="auto" />
                     <BackButton navigation={navigation}></BackButton>
                     <View style={styles.inputContainer}>
-                        <TextInput onChangeText={text => setSelectedName(text)} defaultValue={userInfo.name}></TextInput>
+                        <TextInput 
+                            onChangeText={text => setSelectedName(text)} 
+                            keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
+                            autoCapitalize='words'
+                            defaultValue={userInfo.name}>
+                        </TextInput>
                     </View>
                     <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
                 </View>

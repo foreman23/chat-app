@@ -111,12 +111,14 @@ export default function Profile({ navigation }) {
     // pickImage Helper 2:
     // Upload BLOB to firebase storage
     const uploadBlob = async (blob) => {
-        try {
-            const storageRef = ref(storage, `pfps/RwUSQqgstKUzSVbQ7o2N4vSug5D2.png`);
-            const snapshot = await uploadBytes(storageRef, blob);
-            setOnUpdateImage(Math.random())
-        } catch (error) {
-            console.error("Error uploading blob:", error);
+        if (auth.currentUser) {
+            try {
+                const storageRef = ref(storage, `pfps/${auth.currentUser.uid}.png`);
+                const snapshot = await uploadBytes(storageRef, blob);
+                setOnUpdateImage(Math.random())
+            } catch (error) {
+                console.error("Error uploading blob:", error);
+            }
         }
     };
 
@@ -125,7 +127,8 @@ export default function Profile({ navigation }) {
     // Grab profile picture from storage
     const [pfpURL, setPfpURL] = useState(null);
     useEffect(() => {
-        const pfpRef = ref(storage, `pfps/RwUSQqgstKUzSVbQ7o2N4vSug5D2.png`)
+        if (auth.currentUser) {
+            const pfpRef = ref(storage, `pfps/${auth.currentUser.uid}.png`)
 
         getDownloadURL(pfpRef).then((url) => {
             setPfpURL(url);
@@ -133,36 +136,40 @@ export default function Profile({ navigation }) {
             .catch((error) => {
                 console.error('Error getting profile picture: ', error);
             })
+        }
     }, [auth.currentUser, storage]);
 
     // Get firestore user info from authenticated email
     const readUserData = async () => {
-        try {
-            const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
-            const docSnap = await getDoc(docRef);
+        if (auth.currentUser) {
+            try {
+                const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
+                const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                // Update the userInfo state with docSnap.data()
-                setUserInfo(docSnap.data());
-                const currentDate = new Date();
-                const userBirthdate = new Date(docSnap.data().birthdate.seconds * 1000);
-                age = currentDate.getUTCFullYear() - userBirthdate.getUTCFullYear();
-                // Check if the birthday has occurred this year or not
-                if (
-                    currentDate.getUTCMonth() < userBirthdate.getUTCMonth() ||
-                    (currentDate.getUTCMonth() === userBirthdate.getUTCMonth() &&
-                        currentDate.getUTCDate() < userBirthdate.getUTCDate())
-                ) {
-                    // If the birthday hasn't occurred yet, subtract 1 from the age
-                    age--;
+                if (docSnap.exists()) {
+                    // Update the userInfo state with docSnap.data()
+                    setUserInfo(docSnap.data());
+                    const currentDate = new Date();
+                    const userBirthdate = new Date(docSnap.data().birthdate.seconds * 1000);
+                    age = currentDate.getUTCFullYear() - userBirthdate.getUTCFullYear();
+                    // Check if the birthday has occurred this year or not
+                    if (
+                        currentDate.getUTCMonth() < userBirthdate.getUTCMonth() ||
+                        (currentDate.getUTCMonth() === userBirthdate.getUTCMonth() &&
+                            currentDate.getUTCDate() < userBirthdate.getUTCDate())
+                    ) {
+                        // If the birthday hasn't occurred yet, subtract 1 from the age
+                        age--;
+                    }
+                    setUserDisplayAge(age);
+                } else {
+                    console.log("Document does not exist!");
                 }
-                setUserDisplayAge(age);
-            } else {
-                console.log("Document does not exist!");
+            } catch (error) {
+                console.error("Error fetching document: ", error);
             }
-        } catch (error) {
-            console.error("Error fetching document: ", error);
         }
+
     };
 
     useEffect(() => {
@@ -185,7 +192,7 @@ export default function Profile({ navigation }) {
             <ScreenHeader navigation={navigation} title='Profile'></ScreenHeader>
             <View style={styles.profileImageContainer}>
                 <TouchableOpacity onPress={pickImage}>
-                    {auth.currentUser.uid ? (
+                    {auth.currentUser ? (
                         <View style={{ alignItems: 'center' }}>
                             {permissionDenied && (
                                 <View style={{ marginBottom: 2 }}>

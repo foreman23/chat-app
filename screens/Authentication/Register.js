@@ -46,6 +46,7 @@ const Register = ({ navigation }) => {
                         const user = userCredentials.user;
                         // Push userInfo to firestore
                         writeUserInfo(email);
+                        //navigation.replace('Profile')
                     })
                     .catch(error => alert(error.message));
             }
@@ -85,6 +86,8 @@ const Register = ({ navigation }) => {
                             style={styles.input}
                             placeholder='Email'
                             onChangeText={text => setEmail(text)}
+                            keyboardType='email-address'
+                            autoCapitalize='none'
                         >
                         </TextInput>
                         <Text style={styles.headerText}>Password</Text>
