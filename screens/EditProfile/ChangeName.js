@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Pressable, TextInput } from 'react-native'
+import { StyleSheet, View, StatusBar, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { React, useContext, useState } from 'react'
 import BackButton from '../../components/BackButton';
@@ -40,12 +40,17 @@ const ChangeName = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar style="auto" />
-            <BackButton navigation={navigation}></BackButton>
-            <View style={styles.inputContainer}>
-                <TextInput onChangeText={text => setSelectedName(text)} defaultValue={userInfo.name}></TextInput>
-            </View>
-            <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <View>
+                    <StatusBar style="auto" />
+                    <BackButton navigation={navigation}></BackButton>
+                    <View style={styles.inputContainer}>
+                        <TextInput onChangeText={text => setSelectedName(text)} defaultValue={userInfo.name}></TextInput>
+                    </View>
+                    <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
+                </View>
+            </TouchableWithoutFeedback>
+
         </View>
     )
 }

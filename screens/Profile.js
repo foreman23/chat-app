@@ -1,19 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator, ImageBackground } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ActivityIndicator, ImageBackground, ScrollView } from 'react-native'
 import { React, useState, useEffect, useContext } from 'react'
-import Icon from 'react-native-vector-icons/Ionicons';
-import { renderNode } from 'react-native-elements/dist/helpers';
 import ScreenHeader from '../components/ScreenHeader';
-import { auth } from '../firebase';
+import { auth, storage } from '../firebase';
 import { firestore } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { UserContext } from './Context/UserContext';
+import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Profile({ navigation }) {
 
-    const {userInfo, setUserInfo} = useContext(UserContext);
+    const { userInfo, setUserInfo } = useContext(UserContext);
     const [userDisplayAge, setUserDisplayAge] = useState(null);
-
 
     // Go to change name screen
     const navigateChangeName = () => {
@@ -30,6 +29,11 @@ export default function Profile({ navigation }) {
         navigation.push('ChangeLocation');
     }
 
+    // Go to change profile picture screen
+    const navigateChangePFP = () => {
+        navigation.push('ChangePFP');
+    }
+
     // Go to friends screen
     const navigateFriends = () => {
         navigation.push('FriendsList');
@@ -44,6 +48,92 @@ export default function Profile({ navigation }) {
             </View>
         );
     };
+
+    // -----------------------------------------------------------------------
+
+    // Function for changing profile picture
+    const [imageChosen, setImageChosen] = useState(null);
+
+    // Permissions flag
+    const [permissionDenied, setPermissionDenied] = useState(false);
+
+    const pickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (permissionResult.granted === true) {
+            setPermissionDenied(false);
+            try {
+                let result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.All,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 1,
+                });
+
+                if (result.assets !== null) {
+                    setImageChosen(result.assets[0].uri);
+                    const blob = await getBlobFroUri(result.assets[0].uri);
+                    uploadBlob(blob);
+                }
+            } catch (error) {
+                console.error("Error picking image:", error);
+            }
+        }
+        else {
+            setPermissionDenied(true);
+        }
+
+    };
+
+
+    // pickImage Helper 1:
+    // Convert imageChosen URI to BLOB (binary large object)
+    const getBlobFroUri = async (uri) => {
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function (e) {
+                reject(new TypeError("Network request failed"));
+            };
+            xhr.responseType = "blob";
+            xhr.open("GET", uri, true);
+            xhr.send(null);
+        });
+
+        return blob;
+    };
+
+    // state to notify the updating image process
+    const [onUpdateImage, setOnUpdateImage] = useState(Math.random())
+
+    // pickImage Helper 2:
+    // Upload BLOB to firebase storage
+    const uploadBlob = async (blob) => {
+        try {
+            const storageRef = ref(storage, `pfps/RwUSQqgstKUzSVbQ7o2N4vSug5D2.png`);
+            const snapshot = await uploadBytes(storageRef, blob);
+            setOnUpdateImage(Math.random())
+        } catch (error) {
+            console.error("Error uploading blob:", error);
+        }
+    };
+
+    // -----------------------------------------------------------------------
+
+    // Grab profile picture from storage
+    const [pfpURL, setPfpURL] = useState(null);
+    useEffect(() => {
+        const pfpRef = ref(storage, `pfps/RwUSQqgstKUzSVbQ7o2N4vSug5D2.png`)
+
+        getDownloadURL(pfpRef).then((url) => {
+            setPfpURL(url);
+        })
+            .catch((error) => {
+                console.error('Error getting profile picture: ', error);
+            })
+    }, [auth.currentUser, storage]);
 
     // Get firestore user info from authenticated email
     const readUserData = async () => {
@@ -94,8 +184,19 @@ export default function Profile({ navigation }) {
             <StatusBar style="auto" />
             <ScreenHeader navigation={navigation} title='Profile'></ScreenHeader>
             <View style={styles.profileImageContainer}>
-                <TouchableOpacity>
-                    <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+                <TouchableOpacity onPress={pickImage}>
+                    {auth.currentUser.uid ? (
+                        <View style={{ alignItems: 'center' }}>
+                            {permissionDenied && (
+                                <View style={{ marginBottom: 2 }}>
+                                    <Text style={styles.permDenied}>* Enable media library permissions for Tangoh</Text>
+                                </View>
+                            )}
+                            <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.png?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
+                        </View>
+                    ) : (
+                        <Text>PFP Here</Text>
+                    )}
                 </TouchableOpacity>
             </View>
             <View style={styles.profileNameContainer}>
@@ -106,7 +207,7 @@ export default function Profile({ navigation }) {
 
             <TouchableOpacity onPress={navigateFriends} style={styles.bioBar}>
                 <Text>Friends</Text>
-                <Text style={styles.greenText}>117</Text>
+                <Text style={styles.greenText}>0</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={navigateChangeGender} style={styles.bioBar}>
@@ -148,6 +249,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
+    },
+    permDenied: {
+        textAlign: 'center',
+        color: 'red',
     },
     bioBar: {
         flexDirection: 'row',
@@ -201,6 +306,7 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 140,
         height: 140,
+        borderRadius: 75,
     },
     greenText: {
         color: '#5A8F7B',

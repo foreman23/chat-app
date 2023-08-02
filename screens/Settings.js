@@ -19,6 +19,11 @@ export default function Settings({ navigation }) {
         .catch(error => alert(error.message));
     }
 
+    // Delete user account
+    const handleDeleteProfile = () => {
+        navigation.replace('DeleteProfile');
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
@@ -46,7 +51,7 @@ export default function Settings({ navigation }) {
                 <Text style={styles.headerText}>Login</Text>
                 <View style={styles.headerContainer}>
                     <TouchableOpacity onPress={handleSignOut} style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='ios-remove-outline'></Icon><Text style={styles.textText}>Logout</Text></TouchableOpacity>
-                    <View style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='ios-close-outline'></Icon><Text style={styles.textText}>Delete Account</Text></View>
+                    <TouchableOpacity onPress={handleDeleteProfile} style={{ flexDirection: 'row' }}><Icon size={30} style={styles.iconStyle} name='ios-close-outline'></Icon><Text style={styles.textText}>Delete Account</Text></TouchableOpacity>
                 </View>
             </ScrollView>
 

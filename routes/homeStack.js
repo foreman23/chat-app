@@ -14,6 +14,8 @@ import AddFriend from '../screens/Friends/AddFriend';
 import ChangeName from '../screens/EditProfile/ChangeName';
 import ChangeGender from '../screens/EditProfile/ChangeGender';
 import ChangeLocation from '../screens/EditProfile/ChangeLocation';
+import DeleteProfile from '../screens/EditProfile/DeleteProfile';
+import ChangePFP from '../screens/EditProfile/ChangePFP';
 
 const Stack = createStackNavigator();
 
@@ -34,6 +36,8 @@ function AppStack() {
             <Stack.Screen name="ChangeName" component={ChangeName}></Stack.Screen>
             <Stack.Screen name="ChangeGender" component={ChangeGender}></Stack.Screen>
             <Stack.Screen name="ChangeLocation" component={ChangeLocation}></Stack.Screen>
+            <Stack.Screen name="DeleteProfile" component={DeleteProfile}></Stack.Screen>
+            <Stack.Screen name="ChangePFP" component={ChangePFP}></Stack.Screen>
         </Stack.Navigator>
     )
 }
