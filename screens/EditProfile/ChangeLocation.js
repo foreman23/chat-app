@@ -299,7 +299,12 @@ const ChangeLocation = ({ navigation }) => {
                     <StatusBar style="auto" />
                     <BackButton navigation={navigation}></BackButton>
                     <View style={styles.inputContainer}>
-                        <TextInput onChangeText={text => setSelectedLocation(text)} defaultValue={userInfo.country}></TextInput>
+                        <TextInput 
+                            placeholderTextColor='#A9A9A9'
+                            placeholder='Location'
+                            keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
+                            onChangeText={text => setSelectedLocation(text)} 
+                            defaultValue={userInfo.country}></TextInput>
                     </View>
                     <LargeButton function={handleSubmit} title='Submit Changes'></LargeButton>
                 </View>

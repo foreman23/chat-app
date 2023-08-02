@@ -20,10 +20,13 @@ const DeleteProfile = ({ navigation }) => {
     // Sign out current firebase user
     const handleSignOut = () => {
         auth.signOut()
-            .then(() => {
-                navigation.replace('Login');
+        .then(() => {
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
             })
-            .catch(error => alert(error.message));
+        })
+        .catch(error => alert(error.message));
     }
 
     // Delete user firestore information
@@ -66,7 +69,13 @@ const DeleteProfile = ({ navigation }) => {
                         <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>{auth.currentUser?.email}</Text>
                     </View>
                     <View style={styles.inputContainer}>
-                        <TextInput onChangeText={text => setEnteredEmail(text)}></TextInput>
+                        <TextInput 
+                            placeholder='Email'
+                            placeholderTextColor='#A9A9A9'
+                            keyboardType='email-address'
+                            autoCapitalize='none'
+                            onChangeText={text => setEnteredEmail(text)}>
+                        </TextInput>
                     </View>
                     <TouchableOpacity onPress={deleteUserAccount} style={styles.buttonContainer}>
                         <Text style={styles.button}>Delete Account</Text>

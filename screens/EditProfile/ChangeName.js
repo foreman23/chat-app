@@ -49,6 +49,8 @@ const ChangeName = ({ navigation }) => {
                             onChangeText={text => setSelectedName(text)} 
                             keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
                             autoCapitalize='words'
+                            placeholderTextColor='#A9A9A9'
+                            placeholder='Name'
                             defaultValue={userInfo.name}>
                         </TextInput>
                     </View>

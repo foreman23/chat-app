@@ -54,7 +54,8 @@ const InitProfile = ({ navigation }) => {
                         <Text style={styles.headerText}>What is your name?</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder='Enter first name'
+                            placeholder='Name'
+                            placeholderTextColor='#A9A9A9'
                             keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
                             autoCapitalize='words'
                             onChangeText={text => setName(text)}
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
         borderRadius: 12.5,
         fontSize: 16,
         padding: 15,
-        paddingLeft: 25,
+        paddingLeft: 12.5,
     },
     forgot: {
         textAlign: 'right',

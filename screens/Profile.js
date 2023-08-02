@@ -43,7 +43,7 @@ export default function Profile({ navigation }) {
     const interests = ['Movies', 'Hiking', 'Reading', 'Gym', 'Writing', 'Fishing', 'Games']
     const renderItem = ({ item }) => {
         return (
-            <View>
+            <View style={styles.interestItemContainer}>
                 <Text style={styles.interestItem}>{item}</Text>
             </View>
         );
@@ -289,14 +289,16 @@ const styles = StyleSheet.create({
     interests: {
         flexDirection: 'row',
     },
-    interestItem: {
+    interestItemContainer: {
         backgroundColor: '#5A8F7B',
-        color: '#FFFFFF',
-        marginHorizontal: 5,
+        borderRadius: 32.5,
+        marginHorizontal: 4,
         marginVertical: 2,
         padding: 10,
         paddingHorizontal: 15,
-        borderRadius: 32.5,
+    },
+    interestItem: {
+        color: '#FFFFFF',
         fontSize: 12,
     },
     profileNameContainer: {

@@ -85,6 +85,7 @@ const Register = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             placeholder='Email'
+                            placeholderTextColor='#A9A9A9'
                             onChangeText={text => setEmail(text)}
                             keyboardType='email-address'
                             autoCapitalize='none'
@@ -95,6 +96,7 @@ const Register = ({ navigation }) => {
                             style={styles.input}
                             secureTextEntry
                             placeholder='Password'
+                            placeholderTextColor='#A9A9A9'
                             onChangeText={text => setPassword(text)}
                         >
                         </TextInput>
@@ -103,6 +105,7 @@ const Register = ({ navigation }) => {
                             style={styles.input}
                             secureTextEntry
                             placeholder='Confirm password'
+                            placeholderTextColor='#A9A9A9'
                             onChangeText={text => setConfirmPassword(text)}
                         >
                         </TextInput>
@@ -195,7 +198,7 @@ const styles = StyleSheet.create({
         borderRadius: 12.5,
         fontSize: 16,
         padding: 15,
-        paddingLeft: 25,
+        paddingLeft: 12.5,
     },
     forgot: {
         textAlign: 'right',

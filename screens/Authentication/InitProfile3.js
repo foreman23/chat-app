@@ -306,6 +306,7 @@ const InitProfile3 = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             placeholder='Select country'
+                            placeholderTextColor='#A9A9A9'
                             value={country}
                             onChangeText={text => setCountry(text)}
                         >
@@ -314,6 +315,7 @@ const InitProfile3 = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             placeholder='Enter state/province'
+                            placeholderTextColor='#A9A9A9'
                             value={state}
                             onChangeText={text => setState(text)}
                         >
@@ -322,6 +324,7 @@ const InitProfile3 = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             placeholder='Enter city'
+                            placeholderTextColor='#A9A9A9'
                             value={city}
                             onChangeText={text => setCity(text)}
                         >
@@ -425,6 +428,6 @@ const styles = StyleSheet.create({
         borderRadius: 12.5,
         fontSize: 16,
         padding: 15,
-        paddingLeft: 25,
+        paddingLeft: 12.5,
     },
 })

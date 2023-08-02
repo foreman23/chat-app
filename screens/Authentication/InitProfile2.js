@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         borderRadius: 12.5,
         fontSize: 16,
         padding: 15,
-        paddingLeft: 25,
+        paddingLeft: 12.5,
     },
     preferencesContainer: {
         marginHorizontal: 0,

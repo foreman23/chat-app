@@ -14,7 +14,10 @@ export default function Settings({ navigation }) {
     const handleSignOut = () => {
         auth.signOut()
         .then(() => {
-            navigation.replace('Login');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            })
         })
         .catch(error => alert(error.message));
     }

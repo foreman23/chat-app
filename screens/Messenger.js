@@ -42,14 +42,13 @@ export default function Messenger({ navigation, route }) {
 
             {/* PLACEHOLDER DUMMY MESSAGES */}
             <ScrollView>
-                <Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text>
-                <Text style={styles.sentMessages}>Hi! Thanks for reaching out. I'm glad you found my profile intriguing. I'd love to chat and get to know you better. So, tell me, what caught your attention?</Text>
-                <Text style={styles.receivedMessages}>Well, besides your beautiful smile, I noticed we share a love for adventure. Your hiking and travel pictures really caught my eye. Have you been on any exciting trips lately?</Text>
-                <Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text>
-                <Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text>
-                <Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text>
-                <Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text>
-
+                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
+                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Hi! Thanks for reaching out. I'm glad you found my profile intriguing. I'd love to chat and get to know you better. So, tell me, what caught your attention?</Text></View>
+                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Well, besides your beautiful smile, I noticed we share a love for adventure. Your hiking and travel pictures really caught my eye. Have you been on any exciting trips lately?</Text></View>
+                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text></View>
+                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
+                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
+                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text></View>
             </ScrollView>
 
             {/* Keyboard input */}
@@ -80,35 +79,39 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
-    sentMessages: {
+    sentMessagesContainer: {
         backgroundColor: '#5A8F7B',
-        color: '#FFFFFF',
         padding: 10,
         paddingHorizontal: 15,
         margin: 10,
+        width: 300,
         borderTopLeftRadius: 15,
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
-        fontWeight: 300,
-        width: 300,
-        fontSize: 14,
         alignSelf: 'flex-end',
+    },
+    sentMessages: {
+        color: '#FFFFFF',
+        fontWeight: 300,
+        fontSize: 14,
         lineHeight: 20,
     },
-    receivedMessages: {
+    receivedMessagesContainer: {
         borderColor: '#D2D2D2',
         borderWidth: 1,
-        color: '#252525',
         padding: 10,
         paddingHorizontal: 15,
         margin: 10,
         borderTopRightRadius: 15,
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
-        fontWeight: 300,
         width: 300,
-        fontSize: 14,
         alignSelf: 'flex-start',
+    },
+    receivedMessages: {
+        color: '#252525',
+        fontWeight: 300,
+        fontSize: 14,
         lineHeight: 20,
     },
     headerBar: {
