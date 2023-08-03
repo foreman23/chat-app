@@ -4,15 +4,16 @@ import { React, useState, useEffect, useContext } from 'react'
 import ScreenHeader from '../components/ScreenHeader';
 import { auth, storage } from '../firebase';
 import { firestore } from '../firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { UserContext } from './Context/UserContext';
 import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 
 export default function Profile({ navigation }) {
 
     const { userInfo, setUserInfo } = useContext(UserContext);
-    const [userDisplayAge, setUserDisplayAge] = useState(null);
 
     // Go to change name screen
     const navigateChangeName = () => {
@@ -32,11 +33,6 @@ export default function Profile({ navigation }) {
     // Go to change profile picture screen
     const navigateChangePFP = () => {
         navigation.push('ChangePFP');
-    }
-
-    // Go to friends screen
-    const navigateFriends = () => {
-        navigation.push('FriendsList');
     }
 
     // List of interests
@@ -71,9 +67,26 @@ export default function Profile({ navigation }) {
                 });
 
                 if (result.assets !== null) {
-                    setImageChosen(result.assets[0].uri);
-                    const blob = await getBlobFroUri(result.assets[0].uri);
-                    uploadBlob(blob);
+                    const imageSize = await checkImageSize(result.assets[0].uri);
+                    if (imageSize <= 30000000) {
+                        setImageChosen(result.assets[0].uri);
+                        const uri = await compressUri(result.assets[0].uri)
+                        console.log(uri)
+                        const blob = await getBlobFroUri(uri);
+                        const success = await uploadBlob(blob);
+                        //console.log(success)
+                        if (success === true) {
+                            // Update firestore db to not use default pfp
+                            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+                            await updateDoc(docRef, {
+                                defaultPfp: false
+                            })
+                            setUserInfo((prevUser) => ({ ...prevUser, defaultPfp: false, }));
+                        }
+                    }
+                    else {
+                        console.error('Error picking image: Too large!');
+                    }
                 }
             } catch (error) {
                 console.error("Error picking image:", error);
@@ -85,8 +98,31 @@ export default function Profile({ navigation }) {
 
     };
 
+    // pickImage Helper 0:
+    // Check image size (must be less than 30mb or 30,000,000 bytes)
+    const checkImageSize = async (uri) => {
+        const fileInfo = await FileSystem.getInfoAsync(uri)
+        return fileInfo.size
+    }
 
     // pickImage Helper 1:
+    // Compress image uri
+    const compressUri = async (uri) => {
+        try {
+            const result = await manipulateAsync(
+                uri,
+                [{ resize: { width: 320 } }],
+                { compress: 0.8, format: 'jpeg' }
+            )
+
+            return result.uri;
+        } catch (error) {
+            console.error('Error compressing and resizing image:', error);
+            return null;
+        }
+    }
+
+    // pickImage Helper 2:
     // Convert imageChosen URI to BLOB (binary large object)
     const getBlobFroUri = async (uri) => {
         const blob = await new Promise((resolve, reject) => {
@@ -108,82 +144,35 @@ export default function Profile({ navigation }) {
     // state to notify the updating image process
     const [onUpdateImage, setOnUpdateImage] = useState(Math.random())
 
-    // pickImage Helper 2:
+    // pickImage Helper 3:
     // Upload BLOB to firebase storage
     const uploadBlob = async (blob) => {
         if (auth.currentUser) {
             try {
-                const storageRef = ref(storage, `pfps/${auth.currentUser.uid}.png`);
-                const snapshot = await uploadBytes(storageRef, blob);
+                const storageRef = ref(storage, `pfps/${auth.currentUser.uid}.jpg`);
+                const metadata = {
+                    contentType: 'image/jpeg',
+                }
+                const snapshot = await uploadBytes(storageRef, blob, metadata);
                 setOnUpdateImage(Math.random())
+                return true
             } catch (error) {
                 console.error("Error uploading blob:", error);
+                return false
             }
         }
     };
 
-    // -----------------------------------------------------------------------
+    // Function and use state for switching between level and exp view
+    const [levelView, setLevelView] = useState(true);
 
-    // Grab profile picture from storage
-    const [pfpURL, setPfpURL] = useState(null);
-    useEffect(() => {
-        if (auth.currentUser) {
-            const pfpRef = ref(storage, `pfps/${auth.currentUser.uid}.png`)
-
-        getDownloadURL(pfpRef).then((url) => {
-            setPfpURL(url);
-        })
-            .catch((error) => {
-                console.error('Error getting profile picture: ', error);
-            })
+    const handlePressLevel = () => {
+        if (levelView === true) {
+            setLevelView(false);
         }
-    }, [auth.currentUser, storage]);
-
-    // Get firestore user info from authenticated email
-    const readUserData = async () => {
-        if (auth.currentUser) {
-            try {
-                const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    // Update the userInfo state with docSnap.data()
-                    setUserInfo(docSnap.data());
-                    const currentDate = new Date();
-                    const userBirthdate = new Date(docSnap.data().birthdate.seconds * 1000);
-                    age = currentDate.getUTCFullYear() - userBirthdate.getUTCFullYear();
-                    // Check if the birthday has occurred this year or not
-                    if (
-                        currentDate.getUTCMonth() < userBirthdate.getUTCMonth() ||
-                        (currentDate.getUTCMonth() === userBirthdate.getUTCMonth() &&
-                            currentDate.getUTCDate() < userBirthdate.getUTCDate())
-                    ) {
-                        // If the birthday hasn't occurred yet, subtract 1 from the age
-                        age--;
-                    }
-                    setUserDisplayAge(age);
-                } else {
-                    console.log("Document does not exist!");
-                }
-            } catch (error) {
-                console.error("Error fetching document: ", error);
-            }
+        else {
+            setLevelView(true);
         }
-
-    };
-
-    useEffect(() => {
-        // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
-        console.log("READING user state from firestore:")
-        readUserData();
-    }, [auth.currentUser?.email]);
-
-    if (userInfo === null) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
-            </View>
-        )
     }
 
     return (
@@ -199,7 +188,12 @@ export default function Profile({ navigation }) {
                                     <Text style={styles.permDenied}>* Enable media library permissions for Tangoh</Text>
                                 </View>
                             )}
-                            <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.png?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
+                            {userInfo.defaultPfp === true && (
+                                <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+                            )}
+                            {userInfo.defaultPfp === false && (
+                                <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
+                            )}
                         </View>
                     ) : (
                         <Text>PFP Here</Text>
@@ -208,13 +202,24 @@ export default function Profile({ navigation }) {
             </View>
             <View style={styles.profileNameContainer}>
                 <TouchableOpacity onPress={navigateChangeName}>
-                    <Text style={{ fontSize: 18, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userDisplayAge}</Text></Text>
+                    <Text style={{ fontSize: 16, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userInfo.age}</Text></Text>
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity onPress={navigateFriends} style={styles.bioBar}>
-                <Text>Friends</Text>
-                <Text style={styles.greenText}>0</Text>
+            <TouchableOpacity onPress={handlePressLevel} style={[styles.bioBarContainer, !levelView && styles.bioBarExpContainer, levelView]}>
+                <View style={[styles.bioBarLevel, !levelView && styles.bioBarExp, levelView, !levelView && userInfo.exp <= 15 ? { width: `14%` } : null, !levelView && userInfo.exp > 15 ? { width: `${userInfo.exp}%` } : null]}>
+                    {levelView && (
+                        <View style={styles.levelView}>
+                            <Text>Level</Text>
+                            <Text style={styles.greenText}>{userInfo.level}</Text>
+                        </View>
+                    )}
+                    {!levelView && (
+                        <View style={styles.levelViewExp}>
+                            <Text style={{ marginRight: 7, color: '#FFFFFF' }}>{(userInfo.exp / 100) * 100}%</Text>
+                        </View>
+                    )}
+                </View>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={navigateChangeGender} style={styles.bioBar}>
@@ -261,6 +266,24 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: 'red',
     },
+    bioBarContainer: {
+        paddingHorizontal: 30,
+        marginVertical: 7,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 32.5,
+        padding: 20,
+        marginHorizontal: 15,
+    },
+    bioBarExpContainer: {
+        paddingHorizontal: 30,
+        marginVertical: 7,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 32.5,
+        padding: 20,
+        marginHorizontal: 15,
+    },
     bioBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -271,6 +294,17 @@ const styles = StyleSheet.create({
         borderRadius: 32.5,
         padding: 20,
         marginHorizontal: 15,
+    },
+    bioBarLevel: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    bioBarExp: {
+        //width: '75%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderRadius: 32.5,
+        backgroundColor: '#5A8F7B',
     },
     interestBar: {
         flexDirection: 'row',
@@ -328,5 +362,15 @@ const styles = StyleSheet.create({
     listContainer: {
         flexDirection: 'column',
         marginBottom: 15,
+    },
+    levelView: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    levelViewExp: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
     },
 })

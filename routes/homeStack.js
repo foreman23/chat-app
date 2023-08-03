@@ -15,12 +15,11 @@ import ChangeName from '../screens/EditProfile/ChangeName';
 import ChangeGender from '../screens/EditProfile/ChangeGender';
 import ChangeLocation from '../screens/EditProfile/ChangeLocation';
 import DeleteProfile from '../screens/EditProfile/DeleteProfile';
-import ChangePFP from '../screens/EditProfile/ChangePFP';
+import ChoosePfp from '../screens/Authentication/ChoosePfp';
 
 const Stack = createStackNavigator();
 
 function AppStack() {
-    // CHANGE COMPONENET TO PROPS LATER
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen}></Stack.Screen>
@@ -37,7 +36,7 @@ function AppStack() {
             <Stack.Screen name="ChangeGender" component={ChangeGender}></Stack.Screen>
             <Stack.Screen name="ChangeLocation" component={ChangeLocation}></Stack.Screen>
             <Stack.Screen name="DeleteProfile" component={DeleteProfile}></Stack.Screen>
-            <Stack.Screen name="ChangePFP" component={ChangePFP}></Stack.Screen>
+            <Stack.Screen name="ChoosePfp" component={ChoosePfp}></Stack.Screen>
         </Stack.Navigator>
     )
 }

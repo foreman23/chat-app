@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback } from 'react-native'
+import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import { React, useContext, useState } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -18,18 +18,24 @@ const Register = ({ navigation }) => {
 
     // Grab UserContext
     const {userInfo, setUserInfo} = useContext(UserContext);
+    console.log(userInfo)
 
     // Grab firestore
     const firestore = getFirestore();
 
+    // Loading state
+    const [isLoading, setIsLoading] = useState(false);
     const handleSignUp = () => {
+        setIsLoading(true);
         // Check passwords match
         if (password !== confirmPassword) {
             setError('Passwords do not match, please try again');
+            setIsLoading(false);
         }
         // Check password length
         else if (password.length < 8) {
             setError('Password must be at least 8 characters long')
+            setIsLoading(false);
         }
         // Check for symbols and numbers
         else {
@@ -38,6 +44,7 @@ const Register = ({ navigation }) => {
             const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(confirmPassword);
             if (hasNumbers === false || hasSymbol === false) {
                 setError('Must contain at least 1 number and 1 symbol')
+                setIsLoading(false);
             }
             // Create a new firebase user with credentials
             else {
@@ -46,9 +53,15 @@ const Register = ({ navigation }) => {
                         const user = userCredentials.user;
                         // Push userInfo to firestore
                         writeUserInfo(email);
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'ChoosePfp'}],
+                        })
                         //navigation.replace('Profile')
                     })
-                    .catch(error => alert(error.message));
+                    .catch(error => alert(error.message)).then((result) => {
+                        setIsLoading(false);
+                    })
             }
         }
     }
@@ -67,6 +80,14 @@ const Register = ({ navigation }) => {
     // Navigate to last page
     handleBack = () => {
         navigation.goBack();
+    }
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+            </View>
+        )
     }
 
     return (
@@ -144,6 +165,11 @@ const styles = StyleSheet.create({
     progressStyle: {
         marginVertical: 10,
         alignSelf: 'center',
+    },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
     },
     title: {
         textAlign: 'center',

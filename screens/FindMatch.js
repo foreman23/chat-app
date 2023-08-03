@@ -1,8 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useState, useContext, useEffect } from 'react';
+import { auth } from '../firebase';
+import { firestore } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ScreenHeader from '../components/ScreenHeader';
+import { UserContext } from './Context/UserContext';
 
 export default function FindMatch({ navigation }) {
 
@@ -12,6 +16,9 @@ export default function FindMatch({ navigation }) {
   const [maleSelected, setMaleSelected] = useState(false);
   const [localSelected, setLocalSelected] = useState(false);
   const [globalSelected, setGlobalSelected] = useState(false);
+
+  // State variables for user context
+  const { userInfo, setUserInfo } = useContext(UserContext);
 
   // THIS SHOULD BE CHANGED/DELETED LATER
   const handleFemale = () => {
@@ -27,6 +34,56 @@ export default function FindMatch({ navigation }) {
     setGlobalSelected(!globalSelected);
   }
 
+  // Get firestore user info from authenticated email
+  const [isLoading, setIsLoading] = useState(true);
+  const readUserData = async () => {
+    if (auth.currentUser) {
+      try {
+        const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          // Update the userInfo state with docSnap.data()
+          setUserInfo(docSnap.data());
+          const currentDate = new Date();
+          const userBirthdate = new Date(docSnap.data().birthdate.seconds * 1000);
+          age = currentDate.getUTCFullYear() - userBirthdate.getUTCFullYear();
+          // Check if the birthday has occurred this year or not
+          if (
+            currentDate.getUTCMonth() < userBirthdate.getUTCMonth() ||
+            (currentDate.getUTCMonth() === userBirthdate.getUTCMonth() &&
+              currentDate.getUTCDate() < userBirthdate.getUTCDate())
+          ) {
+            // If the birthday hasn't occurred yet, subtract 1 from the age
+            age--;
+          }
+          await setUserInfo((prevUser) => ({ ...prevUser, age: age }));
+          setIsLoading(false);
+        } else {
+          console.log("Document does not exist!");
+        }
+      } catch (error) {
+        console.error("Error fetching document: ", error);
+      }
+    }
+
+  };
+
+  useEffect(() => {
+    // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
+    console.log("READING user state from firestore:")
+    readUserData();
+  }, [auth.currentUser?.email]);
+
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
@@ -34,14 +91,14 @@ export default function FindMatch({ navigation }) {
 
       <View style={styles.matchContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {matchArr.map((match, index) => {
-          return (
-            <View style={styles.matchStory} key={index}>
-              <Icon style={{ textAlign: 'center' }} color={'grey'} size={70} name='person-circle-outline'></Icon>
-              <Text style={{ fontSize: 12, textAlign: 'center' }}>{match}</Text>
-            </View>
-          )
-        })}
+          {matchArr.map((match, index) => {
+            return (
+              <View style={styles.matchStory} key={index}>
+                <Icon style={{ textAlign: 'center' }} color={'grey'} size={70} name='person-circle-outline'></Icon>
+                <Text style={{ fontSize: 12, textAlign: 'center' }}>{match}</Text>
+              </View>
+            )
+          })}
         </ScrollView>
       </View>
 
@@ -89,6 +146,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
   matchContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -117,8 +179,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   activeIcon: {
-    textAlign: 'center', 
-    marginBottom: 10, 
+    textAlign: 'center',
+    marginBottom: 10,
     marginTop: 10,
     color: 'white',
   },
@@ -128,8 +190,8 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   inactiveIcon: {
-    textAlign: 'center', 
-    marginBottom: 10, 
+    textAlign: 'center',
+    marginBottom: 10,
     marginTop: 10,
     color: '#5A8F7B',
   },

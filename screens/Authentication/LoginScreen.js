@@ -42,7 +42,6 @@ const LoginScreen = ({ navigation }) => {
     }
 
     if (isLoading) {
-        // Loading screen JSX
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>

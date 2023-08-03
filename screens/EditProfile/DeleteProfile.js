@@ -1,13 +1,19 @@
-import { StyleSheet, Text, View, StatusBar, TouchableOpacity, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import React, { useState } from 'react'
+import { StyleSheet, Text, View, StatusBar, TouchableOpacity, TextInput, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native'
+import React, { useState, useContext } from 'react'
 import BackButton from '../../components/BackButton'
-import { auth } from '../../firebase'
+import { auth, storage } from '../../firebase'
 import { deleteUser } from 'firebase/auth'
 import { deleteDoc, getFirestore, doc } from 'firebase/firestore'
+import { ref, deleteObject } from 'firebase/storage'
+import { UserContext } from '../Context/UserContext'
 
 const DeleteProfile = ({ navigation }) => {
 
     const [enteredEmail, setEnteredEmail] = useState('');
+
+    // Grab UserContext
+    const { userInfo, setUserInfo } = useContext(UserContext);
+
 
     // Navigaste to last page
     handleBack = () => {
@@ -35,25 +41,50 @@ const DeleteProfile = ({ navigation }) => {
         await deleteDoc(docRef);
     }
 
+    // Delete asscociated pfp from cloud storage
+    async function deletePfp() {
+        if (userInfo.defaultPfp === false) {
+            const pfpRef = ref(storage, `pfps/${auth.currentUser.uid}.jpg`);
+            deleteObject(pfpRef).then(() => {
+                // File deleted successfully
+            }).catch((error) => {
+                console.error('Failed to delete user profile image', error);
+            });
+        }
+    }
+
     // Delete user from authentication base
     async function deleteCurrentUser() {
         await deleteUser(auth.currentUser);
     }
 
     // Delete user account if entered string matches user email
+    const [isLoading, setIsLoading] = useState(false);
     async function deleteUserAccount() {
-        console.log(enteredEmail);
-        console.log(auth.currentUser?.email)
+        //console.log(enteredEmail);
+        //console.log(auth.currentUser?.email)
         if (enteredEmail === auth.currentUser?.email) {
+            setIsLoading(true);
             console.log('Email matches!')
             deleteFirestoreInfo().then(() => {
-                console.log('User deleted');
-                deleteCurrentUser();
-                handleSignOut();
+                deletePfp().then(() => {
+                    deleteCurrentUser();
+                    console.log('User deleted');
+                    handleSignOut();
+                })
             }).catch((error) => {
                 console.error('Failed to delete user', error);
+                setIsLoading(false);
             })
         }
+    }
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+            </View>
+        )
     }
 
     return (
@@ -96,11 +127,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
+    },
     buttonContainer: {
         marginHorizontal: 20,
         marginTop: 5,
         borderRadius: 32.5,
-        backgroundColor: 'red',
+        backgroundColor: '#FE0000',
     },
     button: {
         color: 'white',

@@ -1,5 +1,5 @@
 import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback, Platform } from 'react-native'
-import { React, useContext, useState } from 'react'
+import { React, useContext, useEffect, useState } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
 import { auth } from '../../firebase';
 import ProgressBar from 'react-native-progress/Bar';
@@ -9,7 +9,13 @@ const InitProfile = ({ navigation }) => {
 
     const [name, setName] = useState('');
     // Grab UserContext
-    const {userInfo, setUserInfo} = useContext(UserContext);
+    const {userInfo, setUserInfo, resetUser} = useContext(UserContext);
+    
+    // Reset UserContext to default values for new user
+    useEffect(() => {
+        resetUser();
+    }, []);
+
     // Update name property of context
     async function updateName() {
         // Check for invalid chars (numbers, symbols)
