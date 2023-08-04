@@ -10,6 +10,7 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
+import countryData from './DataSets/CountryData';
 
 export default function Profile({ navigation }) {
 
@@ -175,6 +176,25 @@ export default function Profile({ navigation }) {
         }
     }
 
+    // Get Flag Emoji from country code
+    function getFlagEmoji() {
+        const codePoints = userInfo.location.country_code
+          .toUpperCase()
+          .split('')
+          .map(char =>  127397 + char.charCodeAt());
+        setFlagEmoji(String.fromCodePoint(...codePoints));
+    }
+
+
+    // Use state and use effect for setting emoji after populating userInfo
+    const [flagEmoji, setFlagEmoji] = useState(null);
+    useEffect(() => {
+        console.log('getting emoji')
+        getFlagEmoji();
+    }, [userInfo])
+
+    const [isLoading, setIsLoading] = useState(false);
+
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
@@ -192,8 +212,17 @@ export default function Profile({ navigation }) {
                                 <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
                             )}
                             {userInfo.defaultPfp === false && (
-                                <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
+                                <Image
+                                    onLoadStart={() => setIsLoading(true)}
+                                    onLoadEnd={() => setIsLoading(false)}
+                                    style={styles.profileImage}
+                                    source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
                             )}
+                            {/* {isLoading && ( // This is where the loading indicator will be rendered
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size='small' color='#5A8F7B'></ActivityIndicator>
+                                </View>
+                            )} */}
                         </View>
                     ) : (
                         <Text>PFP Here</Text>
@@ -229,7 +258,7 @@ export default function Profile({ navigation }) {
 
             <TouchableOpacity onPress={navigateChangeLocation} style={styles.bioBar}>
                 <Text>Location</Text>
-                <Text style={styles.greenText}>{userInfo.country}</Text>
+                <Text style={styles.greenText}>{flagEmoji} {userInfo.location.country_code}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.interestsContainer}>
@@ -247,7 +276,6 @@ export default function Profile({ navigation }) {
                     </FlatList>
                 </View>
             </TouchableOpacity>
-
         </View>
     )
 }
@@ -261,6 +289,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
+        marginTop: 15,
     },
     permDenied: {
         textAlign: 'center',
