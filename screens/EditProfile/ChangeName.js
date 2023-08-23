@@ -18,7 +18,17 @@ const ChangeName = ({ navigation }) => {
 
     // Handle submit form
     const handleSubmit = () => {
-        updateUserInfo();
+        const hasNumbers = /\d/.test(selectedName);
+        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(selectedName);
+        if (selectedName.length >= 1 && selectedName.length <= 30 && !hasNumbers && !hasSymbol) {
+            updateUserInfo();
+        }
+        else if (hasSymbol || hasNumbers) {
+            console.warn('Name cannot contain numbers or symbols')
+        }
+        else {
+            console.warn('Name must be between 1 and 30 characters');
+        }
     }
 
     // Update user information to firestore

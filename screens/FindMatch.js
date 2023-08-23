@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator
 import { useState, useContext, useEffect } from 'react';
 import { auth } from '../firebase';
 import { firestore } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ScreenHeader from '../components/ScreenHeader';
 import { UserContext } from './Context/UserContext';
@@ -68,6 +68,32 @@ export default function FindMatch({ navigation }) {
     }
 
   };
+
+  // Handle button press for start find match
+  const handleFindMatch = async () => {
+    console.log('Finding match...')
+
+    if (auth.currentUser) {
+      try {
+        const docRef = doc(firestore, 'pairing_system', 'waiting');
+        await updateDoc(docRef, {
+          uidArr: arrayUnion(auth.currentUser.uid),
+        })
+        console.log("WRITTEN to firestore")
+        // UNCOMMENT LATER WHEN IMPLEMENT BACKGROUND SEARCH
+        //navigation.push('Searching');
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Searching'}],
+        })
+
+      } catch (error) {
+        console.error('Error adding user to match pool', error);
+      }
+    }
+  }
+
 
   useEffect(() => {
     // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
@@ -134,7 +160,7 @@ export default function FindMatch({ navigation }) {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.matchButtonContainer}>
+      <TouchableOpacity onPress={handleFindMatch} style={styles.matchButtonContainer}>
         <Text style={styles.matchButton}>Find New Match</Text>
       </TouchableOpacity>
     </View>

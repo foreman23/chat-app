@@ -16,6 +16,8 @@ import ChangeGender from '../screens/EditProfile/ChangeGender';
 import ChangeLocation from '../screens/EditProfile/ChangeLocation';
 import DeleteProfile from '../screens/EditProfile/DeleteProfile';
 import ChoosePfp from '../screens/Authentication/ChoosePfp';
+import Searching from '../screens/MatchSearch/Searching';
+import MatchFound from '../screens/MatchSearch/MatchFound';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +39,8 @@ function AppStack() {
             <Stack.Screen name="ChangeLocation" component={ChangeLocation}></Stack.Screen>
             <Stack.Screen name="DeleteProfile" component={DeleteProfile}></Stack.Screen>
             <Stack.Screen name="ChoosePfp" component={ChoosePfp}></Stack.Screen>
+            <Stack.Screen name="Searching" component={Searching}></Stack.Screen>
+            <Stack.Screen name="MatchFound" component={MatchFound}></Stack.Screen>
         </Stack.Navigator>
     )
 }

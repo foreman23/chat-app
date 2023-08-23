@@ -7,7 +7,7 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { firestore } from '../../firebase';
 
 
@@ -72,6 +72,7 @@ const ChoosePfp = ({ navigation }) => {
                 defaultPfp: false
             })
             await setUserInfo((prevUser) => ({ ...prevUser, defaultPfp: false, }));
+            // await createSubCollection(docRef);
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Main' }],
@@ -82,6 +83,18 @@ const ChoosePfp = ({ navigation }) => {
             setIsLoading(false);
         }
     }
+
+    // const createSubCollection = async (docRef) => {
+    //     // Create the 'pairing' subcollection
+    //     const subcollectionRef = collection(docRef, 'pairing');
+    //     // Data for the subcollection document
+    //     const matches = {
+    //         lastMatchFoundAt: null,
+    //         pairArr: [],
+    //     };
+    //     // Add a new document to the subcollection
+    //     await addDoc(subcollectionRef, matches);
+    // }
 
     // Handle skip
     const handleSkip = async () => {

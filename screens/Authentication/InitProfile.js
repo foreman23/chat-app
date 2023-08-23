@@ -4,16 +4,19 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { auth } from '../../firebase';
 import ProgressBar from 'react-native-progress/Bar';
 import { UserContext } from '../Context/UserContext';
+import { PairContext } from '../Context/PairContext';
 
 const InitProfile = ({ navigation }) => {
 
     const [name, setName] = useState('');
     // Grab UserContext
     const {userInfo, setUserInfo, resetUser} = useContext(UserContext);
+    const {resetPair} = useContext(PairContext);
     
     // Reset UserContext to default values for new user
     useEffect(() => {
         resetUser();
+        resetPair();
     }, []);
 
     // Update name property of context

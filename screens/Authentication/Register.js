@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import ProgressBar from 'react-native-progress/Bar';
 import { UserContext } from '../Context/UserContext';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, collection, addDoc } from 'firebase/firestore';
 
 const Register = ({ navigation }) => {
 
@@ -70,7 +70,10 @@ const Register = ({ navigation }) => {
     async function writeUserInfo(email) {
         try {
             const docRef = doc(firestore, 'userInfo', email.toLowerCase());
+
+            // Set the user document data
             await setDoc(docRef, userInfo);
+
             console.log('User info written to firestore');
         } catch (error) {
             console.error('Error writing info to firestore', error);

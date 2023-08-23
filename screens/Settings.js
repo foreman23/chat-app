@@ -1,10 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React from 'react'
 import { auth } from '../firebase';
+import { PairContext } from './Context/PairContext';
+import { useContext } from 'react';
 
 export default function Settings({ navigation }) {
+
+    // Grab pair context
+    const {resetPair} = useContext(PairContext);
 
     handleBack = () => {
         navigation.goBack();
@@ -14,6 +18,8 @@ export default function Settings({ navigation }) {
     const handleSignOut = () => {
         auth.signOut()
         .then(() => {
+            // RESET PAIR CONTEXT
+            resetPair();
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],

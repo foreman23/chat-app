@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Pressable } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react'
 
@@ -14,10 +14,18 @@ const ScreenHeader = (props) => {
         props.navigation.push('FriendsList');
     }
 
+    // Go to match search screen
+    const handleMatchSearch = () => {
+        props.navigation.push('Searching');
+    }
+
     return (
         <View style={styles.headerBar}>
             <Text style={{ fontSize: 18, fontWeight: 500 }}>{props.title}</Text>
             <View style={{ flexDirection: 'row' }}>
+                {/* <Pressable hitSlop={10} onPress={handleMatchSearch}>
+                    <ActivityIndicator style={styles.icon} color={'#5A8F7B'}></ActivityIndicator>
+                </Pressable> */}
                 <Pressable hitSlop={10} onPress={handleFriends}>
                     <Icon style={styles.icon} name='people-outline' size={25} color={'#5A8F7B'}></Icon>
                 </Pressable>
