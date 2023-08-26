@@ -7,8 +7,20 @@ export default function Messenger({ navigation, route }) {
 
     const prop = route.params?.prop;
 
-    handleBack = () => {
-        navigation.goBack();
+    const handleBack = () => {
+        navigation.reset({
+            index: 0,
+            routes: [{
+                name: 'Main',
+                state: {
+                    routes: [
+                        {
+                            name: 'Messages',
+                        }
+                    ]
+                }
+            }],
+        })
     }
 
     // Open keyboard for search
@@ -33,7 +45,7 @@ export default function Messenger({ navigation, route }) {
                 </View>
 
                 <View style={{ borderWidth: 0, flex: 4, justifyContent: 'center', marginLeft: 20 }}>
-                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{prop.name}</Text>
+                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{prop}</Text>
                 </View>
                 <View style={{ borderWidth: 0, flex: 1, justifyContent: 'center', marginTop: 3 }}>
                     <Icon size={20} color={'#323232'} name='ellipsis-vertical-sharp'></Icon>

@@ -3,12 +3,14 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-nati
 import Icon from 'react-native-vector-icons/Ionicons';
 import { auth } from '../firebase';
 import { PairContext } from './Context/PairContext';
+import { UserContext } from './Context/UserContext';
 import { useContext } from 'react';
 
 export default function Settings({ navigation }) {
 
     // Grab pair context
     const {resetPair} = useContext(PairContext);
+    const {resetUser} = useContext(UserContext);
 
     handleBack = () => {
         navigation.goBack();
@@ -20,6 +22,7 @@ export default function Settings({ navigation }) {
         .then(() => {
             // RESET PAIR CONTEXT
             resetPair();
+            resetUser();
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],

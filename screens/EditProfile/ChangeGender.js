@@ -29,7 +29,7 @@ const ChangeGender = ({ navigation }) => {
     async function updateUserInfo() {
         try {
             // Update firestore db with new gender
-            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+            const docRef = doc(firestore, 'userInfo', auth.currentUser.uid);
             await updateDoc(docRef, {
                 gender: selectedGender
             })

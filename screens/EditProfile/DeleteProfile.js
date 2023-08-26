@@ -37,7 +37,7 @@ const DeleteProfile = ({ navigation }) => {
 
     // Delete user firestore information
     async function deleteFirestoreInfo() {
-        const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+        const docRef = doc(firestore, 'userInfo', auth.currentUser.uid);
         await deleteDoc(docRef);
     }
 

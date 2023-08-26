@@ -29,7 +29,7 @@ const ChangeLocation = ({ navigation }) => {
     async function updateUserInfo() {
         try {
             // Update firestore db with new location
-            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+            const docRef = doc(firestore, 'userInfo', auth.currentUser.uid);
             await updateDoc(docRef, {
                 location: {
                     country_name: selectedLocation[0],

@@ -6,7 +6,10 @@ const newUser = {
     name: '',
     gender: '',
     birthdate: '',
-    location: {},
+    location: {
+        country_code: "DEFAULT_VALUE",
+        country_name: "DEFAULT_VALUE",
+    },
     level: 1,
     exp: 0,
     defaultPfp: true,

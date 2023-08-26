@@ -52,7 +52,7 @@ const Register = ({ navigation }) => {
                     .then(userCredentials => {
                         const user = userCredentials.user;
                         // Push userInfo to firestore
-                        writeUserInfo(email);
+                        writeUserInfo(auth.currentUser.uid);
                         navigation.reset({
                             index: 0,
                             routes: [{ name: 'ChoosePfp'}],
@@ -67,9 +67,9 @@ const Register = ({ navigation }) => {
     }
 
     // Helper for write userInfo to firestore
-    async function writeUserInfo(email) {
+    async function writeUserInfo(uid) {
         try {
-            const docRef = doc(firestore, 'userInfo', email.toLowerCase());
+            const docRef = doc(firestore, 'userInfo', uid);
 
             // Set the user document data
             await setDoc(docRef, userInfo);

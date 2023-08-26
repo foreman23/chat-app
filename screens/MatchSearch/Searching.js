@@ -31,7 +31,7 @@ const Searching = ({ navigation }) => {
     }
 
     let initialCallback = true;
-    const onMatchFound = onSnapshot(doc(firestore, 'userInfo', auth.currentUser.email, 'pairing', 'matches'), (doc) => {
+    const onMatchFound = onSnapshot(doc(firestore, 'userInfo', auth.currentUser.uid, 'pairing', 'matches'), (doc) => {
         if (initialCallback) {
             initialCallback = false;
             return;
@@ -41,7 +41,7 @@ const Searching = ({ navigation }) => {
             setPairInfo({
                 chatID: doc.data().pairArr[doc.data().pairArr.length - 1],
             });
-            console.log(`pair info: ${pairInfo}`)
+            //console.log(`pair info: ${pairInfo}`)
             navigation.replace('MatchFound');
         } 
     });

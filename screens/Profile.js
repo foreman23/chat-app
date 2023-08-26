@@ -78,7 +78,7 @@ export default function Profile({ navigation }) {
                         //console.log(success)
                         if (success === true) {
                             // Update firestore db to not use default pfp
-                            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+                            const docRef = doc(firestore, 'userInfo', auth.currentUser.uid);
                             await updateDoc(docRef, {
                                 defaultPfp: false
                             })

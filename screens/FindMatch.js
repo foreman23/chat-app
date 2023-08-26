@@ -39,7 +39,7 @@ export default function FindMatch({ navigation }) {
   const readUserData = async () => {
     if (auth.currentUser) {
       try {
-        const docRef = doc(firestore, "userInfo", auth.currentUser?.email);
+        const docRef = doc(firestore, "userInfo", auth.currentUser.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -97,8 +97,16 @@ export default function FindMatch({ navigation }) {
 
   useEffect(() => {
     // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
-    console.log("READING user state from firestore:")
-    readUserData();
+    if (userInfo.location.country_code === "DEFAULT_VALUE") {
+      console.log("READING user state from firestore:")
+      console.log(userInfo)
+      readUserData();
+    }
+
+    else {
+      setIsLoading(false)
+    }
+
   }, [auth.currentUser?.email]);
 
 

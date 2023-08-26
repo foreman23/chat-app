@@ -35,7 +35,7 @@ const ChangeName = ({ navigation }) => {
     async function updateUserInfo() {
         try {
             // Update firestore db with new name
-            const docRef = doc(firestore, 'userInfo', auth.currentUser?.email.toLowerCase());
+            const docRef = doc(firestore, 'userInfo', auth.currentUser.uid);
             await updateDoc(docRef, {
                 name: selectedName
             })

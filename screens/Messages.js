@@ -1,24 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
+import { doc, getDoc } from 'firebase/firestore';
 
 import ScreenHeader from '../components/ScreenHeader';
+import { auth, firestore } from '../firebase';
 
 export default function Messages({ navigation }) {
 
   // PLACEHOLDER MESSAGE DATA (DELETE LATER)
-  const messageData = [
-    { id: '1', name: 'Becky Joe', message: 'Hi, when can we meet?', status: 'Delivered', hoursSince: 2, hoursLeft: null },
-    { id: '2', name: 'John Doe', message: 'Sure, let\'s meet tomorrow!', status: 'Sent', hoursSince: 0, hoursLeft: 24 },
-    { id: '3', name: 'Emily Smith', message: 'I\'m sorry, I can\'t make it.', status: 'Read', hoursSince: 5, hoursLeft: null },
-    { id: '4', name: 'Alex Johnson', message: 'Hey, do you have the project files?', status: 'Delivered', hoursSince: 12, hoursLeft: null },
-    { id: '5', name: 'Sarah Thompson', message: 'Can you please call me back?', status: 'Sent', hoursSince: 0, hoursLeft: 48 },
-    { id: '6', name: 'Michael Brown', message: 'Let\'s grab lunch next week.', status: 'Delivered', hoursSince: 1, hoursLeft: null },
-    { id: '7', name: 'Emma Davis', message: 'Have you seen the latest episode? It was really great.', status: 'Read', hoursSince: 3, hoursLeft: null },
-    { id: '8', name: 'David Wilson', message: 'I need your help with the presentation. Please respond when you can.', status: 'Sent', hoursSince: 0, hoursLeft: 12 },
-    { id: '9', name: 'Olivia Martin', message: 'Happy birthday! Let\'s celebrate.', status: 'Delivered', hoursSince: 24, hoursLeft: null },
-  ];
+  // const messageData = [
+  //   { id: '1', name: 'Becky Joe', message: 'Hi, when can we meet?', status: 'Delivered', hoursSince: 2, hoursLeft: null },
+  //   { id: '2', name: 'John Doe', message: 'Sure, let\'s meet tomorrow!', status: 'Sent', hoursSince: 0, hoursLeft: 24 },
+  // ];
 
   // Open keyboard for search
   const textInputRef = useRef(null);
@@ -31,8 +26,88 @@ export default function Messages({ navigation }) {
     navigation.push('Messenger', { prop: item });
   }
 
+  const [messageDataNames, setMessageDataNames] = useState();
+  const [messageDataChatIDs, setMessageDataChatIDs] = useState();
+  // Grab messageData from firestore
+  const grabMessageData = async () => {
+    if (auth.currentUser) {
+      try {
+        console.log('READING FROM FIRESTORE')
+
+        const docRef = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "matches")
+        const docSnap = await getDoc(docRef)
+
+        if (docSnap.exists()) {
+          console.log("gewhjrghwejgrhjewgrhew", docSnap.data())
+          setMessageDataChatIDs(docSnap.data().pairArr)
+
+          // convertToNames(docSnap.data().pairArr);
+        }
+
+      }
+      catch (error) {
+        console.error("Error fetching document: ", error);
+      }
+    }
+  }
+
+  // Parse the chatID from context to separate the user's ID and the matched user's ID
+  // const parseChatID = (chatID) => {
+  //   console.log(chatID)
+  //   idArr = pairInfo.chatID;
+  //   idArr = pairInfo.chatID.split("_");
+  //   chatID1 = idArr[0];
+  //   chatID2 = idArr[1];
+  //   console.log(chatID1)
+  //   console.log(chatID2)
+  //   // Find respective IDs
+  //   myUID = '';
+  //   theirUID = '';
+  //   if (auth.currentUser.uid === chatID1) {
+  //     myUID = chatID1;
+  //     theirUID = chatID2;
+  //   }
+  //   else {
+  //     myUID = chatID2;
+  //     theirUID = chatID1;
+  //   }
+  //   console.log(`Matched with user: ${theirUID}`)
+  // }
+
+  // Convert user emails to user names
+  const convertToNames = async (chatID) => {
+
+    // const theirUID = parseChatID(chatID);
+    // console.log(theirUID)
+
+    console.log("CONVERTING EMAILS TO NAMES")
+    const length = messageDataEmails.length
+    for (let i = 0; i < length; i++) {
+      console.log(messageDataEmails[i])
+      if (auth.currentUser) {
+        try {
+          console.log('READING FROM FIRESTORE')
+
+          const docRef = doc(firestore, "userInfo", messageDataEmails[i])
+          const docSnap = await getDoc(docRef)
+
+          if (docSnap.exists()) {
+            messageDataEmails[i] = docSnap.data().name
+          }
+        }
+        catch (error) {
+          console.error("Error fetching document: ", error);
+        }
+      }
+    }
+    console.log(messageDataEmails)
+    setMessageDataNames(messageDataEmails);
+
+  }
+
   // Render message group
   const renderItem = ({ item }) => {
+
     return (
       <TouchableOpacity onPress={() => handleClick(item)} style={styles.messageGroup}>
         <View style={{ flex: 1 }}>
@@ -41,7 +116,7 @@ export default function Messages({ navigation }) {
 
         {/* Message Content */}
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', borderWidth: 0, flex: 3, marginLeft: 5 }}>
-          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item.name}</Text>
+          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item}</Text>
           <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.message}</Text>
         </View>
 
@@ -54,6 +129,10 @@ export default function Messages({ navigation }) {
       </TouchableOpacity>
     );
   };
+
+  useEffect(() => {
+    grabMessageData();
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -79,10 +158,10 @@ export default function Messages({ navigation }) {
 
       <View style={styles.messageList}>
         <FlatList
-          data={messageData}
+          data={messageDataChatIDs}
           renderItem={renderItem}
           key={'+'}
-          keyExtractor={(item) => "+" + item.id}
+          keyExtractor={(item) => "+" + item}
         >
         </FlatList>
       </View>
