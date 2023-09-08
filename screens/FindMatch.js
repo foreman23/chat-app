@@ -83,10 +83,7 @@ export default function FindMatch({ navigation }) {
         // UNCOMMENT LATER WHEN IMPLEMENT BACKGROUND SEARCH
         //navigation.push('Searching');
 
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Searching'}],
-        })
+        navigation.replace('Searching');
 
       } catch (error) {
         console.error('Error adding user to match pool', error);

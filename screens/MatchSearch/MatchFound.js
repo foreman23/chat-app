@@ -12,8 +12,8 @@ const MatchFound = ({ navigation }) => {
   // Grab pair context
   const { resetPair, pairInfo, setPairInfo } = useContext(PairContext);
 
-  const handleAccept = () => {
-    navigation.replace('Messenger')
+  const handleAccept = (item) => {
+    navigation.replace('Messenger', { prop: item })
   }
 
   const handleDebug = () => {
@@ -43,6 +43,7 @@ const MatchFound = ({ navigation }) => {
   }
 
   const [matchedUserName, setMatchedUserName] = useState(null);
+  const [propData, setPropData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const grabMatchUserInfo = async () => {
@@ -56,6 +57,7 @@ const MatchFound = ({ navigation }) => {
 
         if (docSnap.exists()) {
           setMatchedUserName(docSnap.data().name);
+          setPropData([docSnap.data().name, theirUID, "FROM_SEARCH"]);        // Add FROM_SEARCH flag to notify navigation
           setIsLoading(false);
         }
 
@@ -90,7 +92,7 @@ const MatchFound = ({ navigation }) => {
         <Text style={styles.matchHeaderText}>{matchedUserName}</Text>
         <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${theirUID}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` }}></Image>
         {/* <Image style={styles.profileImage} source={require('../../assets/placeholderPFP.png')}></Image> */}
-        <LargeButton title='Start Messaging!' function={handleAccept}></LargeButton>
+        <LargeButton title='Start Messaging!' function={() => handleAccept(propData)}></LargeButton>
       </View>
     </View>
   )

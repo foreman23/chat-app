@@ -6,21 +6,32 @@ import React, { useRef } from 'react'
 export default function Messenger({ navigation, route }) {
 
     const prop = route.params?.prop;
+    console.log("PROP HERE:", prop);
+    console.log(prop.length)
 
+
+    // Handles navigate to previous page depending on whether new match or not
     const handleBack = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{
-                name: 'Main',
-                state: {
-                    routes: [
+        if (prop.length > 2) {
+            navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'Main',
+                    state: {
+                      routes: [
                         {
-                            name: 'Messages',
-                        }
-                    ]
-                }
-            }],
-        })
+                          name: 'Messages',
+                        },
+                      ],
+                    },
+                  },
+                ],
+              });
+        }
+        else {
+            navigation.goBack();        // Saves resources by not resetting call to DB
+        }
     }
 
     // Open keyboard for search
@@ -41,11 +52,11 @@ export default function Messenger({ navigation, route }) {
                 </View>
 
                 <View style={{ borderWidth: 0, flex: 1 }}>
-                    <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+                    <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${prop[1]}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de`}}></Image>
                 </View>
 
                 <View style={{ borderWidth: 0, flex: 4, justifyContent: 'center', marginLeft: 20 }}>
-                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{prop}</Text>
+                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{prop[0]}</Text>
                 </View>
                 <View style={{ borderWidth: 0, flex: 1, justifyContent: 'center', marginTop: 3 }}>
                     <Icon size={20} color={'#323232'} name='ellipsis-vertical-sharp'></Icon>

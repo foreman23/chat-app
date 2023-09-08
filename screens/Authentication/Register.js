@@ -69,10 +69,18 @@ const Register = ({ navigation }) => {
     // Helper for write userInfo to firestore
     async function writeUserInfo(uid) {
         try {
+
+            // Init empty pairArr for subcollection
+            const subData = {
+                pairArr: [],
+            };
+
             const docRef = doc(firestore, 'userInfo', uid);
+            const docRef2 = doc(firestore, 'userInfo', uid, 'pairing', 'matches');
 
             // Set the user document data
             await setDoc(docRef, userInfo);
+            await setDoc(docRef2, subData);
 
             console.log('User info written to firestore');
         } catch (error) {

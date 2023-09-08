@@ -1,19 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable, Modal, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useRef, useEffect, useState } from 'react'
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 
 import ScreenHeader from '../components/ScreenHeader';
 import { auth, firestore } from '../firebase';
 
 export default function Messages({ navigation }) {
-
-  // PLACEHOLDER MESSAGE DATA (DELETE LATER)
-  // const messageData = [
-  //   { id: '1', name: 'Becky Joe', message: 'Hi, when can we meet?', status: 'Delivered', hoursSince: 2, hoursLeft: null },
-  //   { id: '2', name: 'John Doe', message: 'Sure, let\'s meet tomorrow!', status: 'Sent', hoursSince: 0, hoursLeft: 24 },
-  // ];
 
   // Open keyboard for search
   const textInputRef = useRef(null);
@@ -27,7 +21,6 @@ export default function Messages({ navigation }) {
   }
 
   const [messageDataNames, setMessageDataNames] = useState();
-  const [messageDataChatIDs, setMessageDataChatIDs] = useState();
   // Grab messageData from firestore
   const grabMessageData = async () => {
     if (auth.currentUser) {
@@ -38,10 +31,7 @@ export default function Messages({ navigation }) {
         const docSnap = await getDoc(docRef)
 
         if (docSnap.exists()) {
-          console.log("gewhjrghwejgrhjewgrhew", docSnap.data())
-          setMessageDataChatIDs(docSnap.data().pairArr)
-
-          // convertToNames(docSnap.data().pairArr);
+          convertToNames(docSnap.data().pairArr);
         }
 
       }
@@ -51,48 +41,26 @@ export default function Messages({ navigation }) {
     }
   }
 
-  // Parse the chatID from context to separate the user's ID and the matched user's ID
-  // const parseChatID = (chatID) => {
-  //   console.log(chatID)
-  //   idArr = pairInfo.chatID;
-  //   idArr = pairInfo.chatID.split("_");
-  //   chatID1 = idArr[0];
-  //   chatID2 = idArr[1];
-  //   console.log(chatID1)
-  //   console.log(chatID2)
-  //   // Find respective IDs
-  //   myUID = '';
-  //   theirUID = '';
-  //   if (auth.currentUser.uid === chatID1) {
-  //     myUID = chatID1;
-  //     theirUID = chatID2;
-  //   }
-  //   else {
-  //     myUID = chatID2;
-  //     theirUID = chatID1;
-  //   }
-  //   console.log(`Matched with user: ${theirUID}`)
-  // }
-
   // Convert user emails to user names
   const convertToNames = async (chatID) => {
 
-    // const theirUID = parseChatID(chatID);
-    // console.log(theirUID)
+    // uidArr index 0 = matched users uids, index 1 = joint chat ids
+    const uidArr = parseChatID(chatID);
+
+    //console.log(uidArr[1])
 
     console.log("CONVERTING EMAILS TO NAMES")
-    const length = messageDataEmails.length
-    for (let i = 0; i < length; i++) {
-      console.log(messageDataEmails[i])
+    for (let i = 0; i < uidArr[0].length; i++) {
       if (auth.currentUser) {
         try {
           console.log('READING FROM FIRESTORE')
 
-          const docRef = doc(firestore, "userInfo", messageDataEmails[i])
+          const docRef = doc(firestore, "userInfo", uidArr[0][i])
           const docSnap = await getDoc(docRef)
 
           if (docSnap.exists()) {
-            messageDataEmails[i] = docSnap.data().name
+            // Stores username as index 0, stores UID as index 1 of subarray
+            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i] ]
           }
         }
         catch (error) {
@@ -100,23 +68,66 @@ export default function Messages({ navigation }) {
         }
       }
     }
-    console.log(messageDataEmails)
-    setMessageDataNames(messageDataEmails);
+    console.log(uidArr)
+    setMessageDataNames(uidArr);
 
   }
+
+
+  // Parse the chatID from context to separate the user's ID and the matched user's ID
+  const parseChatID = (chatIDArr) => {
+
+    // Create unbound copy of chatIDArr
+    let chatIDArrCopy = [...chatIDArr]
+
+    for (let i = 0; i < chatIDArr.length; i++){
+      let splitIDs = chatIDArr[i].pairID.split("_");
+      console.log(splitIDs[0]) 
+      console.log(splitIDs[1])
+      // Find matched user ID
+      theirUID = '';
+      if (auth.currentUser.uid === splitIDs[0]) {
+        theirUID = splitIDs[1];
+      }
+      else if (auth.currentUser.uid === splitIDs[1]) {
+        theirUID = splitIDs[0];
+      }
+      chatIDArr[i] = theirUID;
+    }
+    let payload = [chatIDArr, chatIDArrCopy]
+
+    return payload;
+  }
+
+  // Set chatID state variable for modal manipulation
+  const [currentChatID, setCurrentChatID] = useState(null);
+  const setChatID = (theirUID) => {
+    if (messageDataNames[1].includes(`${theirUID}_${auth.currentUser.uid}`)) {
+      const index = messageDataNames[1].indexOf(`${theirUID}_${auth.currentUser.uid}`);
+      setCurrentChatID(messageDataNames[1][index])
+      setModalVisible(true);
+    }
+    else if (messageDataNames[1].includes(`${auth.currentUser.uid}_${theirUID}`)) {
+      const index = messageDataNames[1].indexOf(`${auth.currentUser.uid}_${theirUID}`);
+      setCurrentChatID(messageDataNames[1][index])
+      console.log(messageDataNames[1][index])
+      setModalVisible(true);
+    }
+  }
+
 
   // Render message group
   const renderItem = ({ item }) => {
 
     return (
-      <TouchableOpacity onPress={() => handleClick(item)} style={styles.messageGroup}>
+      <TouchableOpacity onLongPress={() => setChatID(item[1])} onPress={() => handleClick(item)} style={styles.messageGroup}>
         <View style={{ flex: 1 }}>
-          <Image style={styles.profileImage} source={require('../assets/placeholderPFP.png')}></Image>
+          <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${item[1]}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de`}}></Image>
         </View>
 
         {/* Message Content */}
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', borderWidth: 0, flex: 3, marginLeft: 5 }}>
-          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item}</Text>
+          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item[0]}</Text>
           <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.message}</Text>
         </View>
 
@@ -130,14 +141,64 @@ export default function Messages({ navigation }) {
     );
   };
 
+  // Modal visibility state variable
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Delete a conversation
+  const deleteConvo = async () => {
+    if (auth.currentUser) {
+      try {
+        const docRef = doc(firestore, "pairing_system", "pairs");
+        await deleteDoc(docRef, currentChatID);
+      }
+      catch(error) {
+        console.error("Could not delete conversation", error);
+      }
+    }
+    
+  }
+
+  // Once messageDataNames[0] is populated set loading false
+  const [isLoading, setIsLoading] = useState(true)
+  useEffect(() => {
+    if (messageDataNames && messageDataNames[0] !== undefined) {
+    setIsLoading(false)
+    }
+  }, [messageDataNames])
+
+  // On page load
   useEffect(() => {
     grabMessageData();
   }, [])
 
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+      </View>
+    )
+  }
+
   return (
+
     <View style={styles.container}>
       <StatusBar style="auto" />
       <ScreenHeader navigation={navigation} title='Messages'></ScreenHeader>
+
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Text>Delete Conversation? {currentChatID}</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={deleteConvo}>
+              <Text>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Pressable style={styles.searchContainer} onPress={handleSearchPress}>
         <View>
@@ -158,7 +219,7 @@ export default function Messages({ navigation }) {
 
       <View style={styles.messageList}>
         <FlatList
-          data={messageDataChatIDs}
+          data={messageDataNames[0]}
           renderItem={renderItem}
           key={'+'}
           keyExtractor={(item) => "+" + item}
@@ -187,6 +248,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
+  modalContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'red',
+    marginTop: '50%',
+    marginHorizontal: 50,
+    borderRadius: 12.5,
   },
   searchContainer: {
     borderWidth: 1,

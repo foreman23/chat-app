@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
-import React, { useEffect, useContext } from 'react'
+import React, { useEffect, useContext, useState } from 'react'
 import { doc, arrayRemove, updateDoc, onSnapshot } from 'firebase/firestore';
 import { auth, firestore } from '../../firebase';
 import BackButton from '../../components/BackButton';
@@ -30,26 +30,61 @@ const Searching = ({ navigation }) => {
         }
     }
 
-    let initialCallback = true;
-    const onMatchFound = onSnapshot(doc(firestore, 'userInfo', auth.currentUser.uid, 'pairing', 'matches'), (doc) => {
-        if (initialCallback) {
-            initialCallback = false;
+    const [initialCallback, setInitialCallback] = useState(true);
+    useEffect(() => {
+        // Set dt to the number of seconds since January 1, 1970 UTC
+        dt = Math.floor(Date.now() / 1000);
+        const unsubscribe = onSnapshot(
+            doc(firestore, 'userInfo', auth.currentUser.uid, 'pairing', 'matches'),
+            (doc) => {
+                console.log(`${auth.currentUser.uid} TRIGGERED SNAPSHOT`);
+                if (doc.data().pairArr.length > 0) {
+                    console.log(dt);
+                    let matchDt = doc.data().pairArr[doc.data().pairArr.length - 1].timestamp // convert to seconds
+                    // Compare timestamp of match found to current time (must be matched in last 20 seconds)
+                    console.log(matchDt.seconds - dt);
+                    if (matchDt.seconds - dt < 20 && matchDt.seconds - dt >= 0) {
+                        console.log(`New pair added:`);
+                        setPairInfo({
+                            chatID: doc.data().pairArr[doc.data().pairArr.length - 1].pairID,
+                        });
+                        navigation.replace('MatchFound')
+                    }
+                }
+            }
+        );
+
+        return () => {
+            // Unsubscribe from the listener when the component unmounts
+            unsubscribe();
+        };
+    }, []);
+
+    // Trigger 'matching' function from API
+    const triggerMatch = () => {
+        try {
+            fetch(
+                //   'https://foreman23.pythonanywhere.com/match',
+                'http://10.0.2.2:5000/match'
+            );
             return;
+        } catch (error) {
+            console.error(error);
         }
-        else {
-            console.log(doc.data())
-            setPairInfo({
-                chatID: doc.data().pairArr[doc.data().pairArr.length - 1],
-            });
-            //console.log(`pair info: ${pairInfo}`)
-            navigation.replace('MatchFound');
-        } 
-    });
+    }
+
+    // Function to trigger match and then schedule it to run again after 10 seconds
+    const triggerMatchWithDelay = () => {
+        console.log('TRIGGERING MATCH (CALLING API!!)')
+        triggerMatch();
+        setTimeout(triggerMatch, 10000);
+    };
+
 
     // On page load run these functions
-    // useEffect(() => {
-    //     getMatchPool();
-    // })
+    useEffect(() => {
+        triggerMatchWithDelay();
+    }, [])
 
     return (
         <View style={styles.container}>
