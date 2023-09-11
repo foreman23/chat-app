@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "question-app",
+    "slug": "question-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
