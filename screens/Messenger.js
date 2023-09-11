@@ -1,7 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, ScrollView, Pressable } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
+import { auth, firestore } from '../firebase';
+import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+
 
 export default function Messenger({ navigation, route }) {
 
@@ -12,7 +15,7 @@ export default function Messenger({ navigation, route }) {
 
     // Handles navigate to previous page depending on whether new match or not
     const handleBack = () => {
-        if (prop.length > 2) {
+        if (prop.length > 3) {
             navigation.reset({
                 index: 0,
                 routes: [
@@ -34,11 +37,39 @@ export default function Messenger({ navigation, route }) {
         }
     }
 
+    // Grab chat message data
+    const grabChatData = async () => {
+        if (auth.currentUser) {
+            try {
+                console.log('READING FROM FIRESTORE')
+
+                // Get all messages from chat room subcollection
+                const querySnapshot = await getDocs(collection(firestore, "chat_rooms", prop[2], "messages"));
+                querySnapshot.forEach((doc) => {
+                    // doc.data() is never undefined for query doc snapshots
+                    console.log(doc.id, " => ", doc.data());
+                });
+
+                // if (docSnap.exists()) {
+                //     console.log(docSnap.data())
+                // }
+            }
+            catch(error) {
+                console.error("Error fetching document: ", error);
+            }
+        }
+    }
+
     // Open keyboard for search
     const textInputRef = useRef(null);
     const handleSearchPress = () => {
         textInputRef.current.focus();
     };
+
+    // On page load
+    useEffect(() => {
+        grabChatData();
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -64,7 +95,7 @@ export default function Messenger({ navigation, route }) {
             </View>
 
             {/* PLACEHOLDER DUMMY MESSAGES */}
-            <ScrollView>
+            {/* <ScrollView>
                 <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
                 <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Hi! Thanks for reaching out. I'm glad you found my profile intriguing. I'd love to chat and get to know you better. So, tell me, what caught your attention?</Text></View>
                 <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Well, besides your beautiful smile, I noticed we share a love for adventure. Your hiking and travel pictures really caught my eye. Have you been on any exciting trips lately?</Text></View>
@@ -72,7 +103,7 @@ export default function Messenger({ navigation, route }) {
                 <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
                 <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
                 <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text></View>
-            </ScrollView>
+            </ScrollView> */}
 
             {/* Keyboard input */}
             <Pressable style={styles.searchContainer} onPress={handleSearchPress}>

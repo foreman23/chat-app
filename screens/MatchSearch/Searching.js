@@ -76,8 +76,12 @@ const Searching = ({ navigation }) => {
     // Function to trigger match and then schedule it to run again after 10 seconds
     const triggerMatchWithDelay = () => {
         console.log('TRIGGERING MATCH (CALLING API!!)')
-        triggerMatch();
-        setTimeout(triggerMatch, 10000);
+        setTimeout(triggerMatch, 5000);
+        setTimeout(triggerMatch, 5000);
+        setTimeout(triggerMatch, 15000);
+        setTimeout(() => {
+            console.log('MATCH NOT FOUND! EXIT');
+          }, 30000);
     };
 
 

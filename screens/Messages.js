@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable, Modal, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable, Modal, ActivityIndicator, RefreshControl, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useRef, useEffect, useState } from 'react'
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -58,9 +58,10 @@ export default function Messages({ navigation }) {
           const docRef = doc(firestore, "userInfo", uidArr[0][i])
           const docSnap = await getDoc(docRef)
 
+
           if (docSnap.exists()) {
-            // Stores username as index 0, stores UID as index 1 of subarray
-            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i] ]
+            // Stores username as index 0, stores UID as index 1, stores CHATID as index 2 of subarray
+            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i].pairID ]
           }
         }
         catch (error) {
@@ -68,7 +69,6 @@ export default function Messages({ navigation }) {
         }
       }
     }
-    console.log(uidArr)
     setMessageDataNames(uidArr);
 
   }
@@ -82,8 +82,8 @@ export default function Messages({ navigation }) {
 
     for (let i = 0; i < chatIDArr.length; i++){
       let splitIDs = chatIDArr[i].pairID.split("_");
-      console.log(splitIDs[0]) 
-      console.log(splitIDs[1])
+      //console.log(splitIDs[0]) 
+      //console.log(splitIDs[1])
       // Find matched user ID
       theirUID = '';
       if (auth.currentUser.uid === splitIDs[0]) {
@@ -110,7 +110,7 @@ export default function Messages({ navigation }) {
     else if (messageDataNames[1].includes(`${auth.currentUser.uid}_${theirUID}`)) {
       const index = messageDataNames[1].indexOf(`${auth.currentUser.uid}_${theirUID}`);
       setCurrentChatID(messageDataNames[1][index])
-      console.log(messageDataNames[1][index])
+      //console.log(messageDataNames[1][index])
       setModalVisible(true);
     }
   }

@@ -57,7 +57,7 @@ const MatchFound = ({ navigation }) => {
 
         if (docSnap.exists()) {
           setMatchedUserName(docSnap.data().name);
-          setPropData([docSnap.data().name, theirUID, "FROM_SEARCH"]);        // Add FROM_SEARCH flag to notify navigation
+          setPropData([docSnap.data().name, theirUID, pairInfo.chatID, "FROM_SEARCH"]);        // Add FROM_SEARCH flag to notify navigation
           setIsLoading(false);
         }
 
