@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import FindMatch from "../screens/FindMatch";
+import Home from "../screens/Home";
 import Cards from "../screens/Cards";
 import Messages from "../screens/Messages";
 import Profile from "../screens/Profile";
@@ -12,7 +12,7 @@ const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
     return (
         <Tab.Navigator
-            initialRouteName="FindMatch"
+            initialRouteName="Home"
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarLabel: () => null,
@@ -23,7 +23,7 @@ const TabNavigator = () => {
                         iconName = focused ? 'copy' : 'copy-outline';
                     } else if (route.name === 'Messages') {
                         iconName = focused ? 'chatbubble' : 'chatbubble-outline';
-                    } else if (route.name === 'FindMatch') {
+                    } else if (route.name === 'Home') {
                         iconName = focused ? 'add-circle' : 'add-circle-outline';
                     } else if (route.name === 'Profile') {
                         iconName = focused ? 'ios-person' : 'ios-person-outline';
@@ -41,7 +41,7 @@ const TabNavigator = () => {
         >
             <Tab.Screen name="Cards" component={Cards} />
             <Tab.Screen name="Messages" component={Messages} />
-            <Tab.Screen name="FindMatch" component={FindMatch} />
+            <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Profile" component={Profile} />
         </Tab.Navigator>
     );

@@ -11,12 +11,7 @@ const ScreenHeader = (props) => {
 
     // Go to friends screen
     const handleFriends = () => {
-        props.navigation.push('FriendsList');
-    }
-
-    // Go to match search screen
-    const handleMatchSearch = () => {
-        props.navigation.push('Searching');
+        props.navigation.push('AddFriend');
     }
 
     return (

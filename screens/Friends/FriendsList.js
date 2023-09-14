@@ -8,6 +8,10 @@ const FriendsList = ({ navigation }) => {
         navigation.goBack();
     }
 
+    handleAdd = () => {
+        navigation.push("AddFriend");
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar style="auto" />
@@ -16,7 +20,7 @@ const FriendsList = ({ navigation }) => {
                     <Icon size={30} name='chevron-back'></Icon>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row' }}>
-                    <Pressable hitSlop={10}>
+                    <Pressable onPress={handleAdd} hitSlop={10}>
                         <Icon style={styles.icon} name='add-outline' size={25} color={'#5A8F7B'}></Icon>
                     </Pressable>
                     <Pressable hitSlop={10}>

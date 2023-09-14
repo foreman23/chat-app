@@ -75,12 +75,25 @@ const Register = ({ navigation }) => {
                 pairArr: [],
             };
 
+            const friendData = {
+                friendArr: [],
+            };
+
+            const friendRequestData = {
+                incomingArr: [],
+                outgoingArr: [],
+            }
+
             const docRef = doc(firestore, 'userInfo', uid);
-            const docRef2 = doc(firestore, 'userInfo', uid, 'pairing', 'matches');
+            const docRef2 = doc(firestore, 'userInfo', uid, 'pairing', 'private_chats');
+            const docRef3 = doc(firestore, 'userInfo', uid, 'pairing', 'friends');
+            const docRef4 = doc(firestore, 'userInfo', uid, 'pairing', 'friend_requests');
 
             // Set the user document data
             await setDoc(docRef, userInfo);
             await setDoc(docRef2, subData);
+            await setDoc(docRef3, friendData);
+            await setDoc(docRef4, friendRequestData);
 
             console.log('User info written to firestore');
         } catch (error) {

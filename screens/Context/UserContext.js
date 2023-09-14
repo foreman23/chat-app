@@ -6,6 +6,13 @@ const newUser = {
     name: '',
     gender: '',
     birthdate: '',
+    friend_requests: {
+        outgoingArr: [],
+        incomingArr: [],
+    },
+    friends: {
+        friendArr: [],
+    },
     location: {
         country_code: "DEFAULT_VALUE",
         country_name: "DEFAULT_VALUE",

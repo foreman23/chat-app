@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { createAppContainer } from 'react-navigation';
-import FindMatch from '../screens/FindMatch';
+import Home from '../screens/Home';
 import Settings from '../screens/Settings';
 import TabNavigator from './tabNavigator';
 import Messenger from '../screens/Messenger';

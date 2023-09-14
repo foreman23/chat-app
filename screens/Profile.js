@@ -165,16 +165,16 @@ export default function Profile({ navigation }) {
     };
 
     // Function and use state for switching between level and exp view
-    const [levelView, setLevelView] = useState(true);
+    // const [levelView, setLevelView] = useState(true);
 
-    const handlePressLevel = () => {
-        if (levelView === true) {
-            setLevelView(false);
-        }
-        else {
-            setLevelView(true);
-        }
-    }
+    // const handlePressLevel = () => {
+    //     if (levelView === true) {
+    //         setLevelView(false);
+    //     }
+    //     else {
+    //         setLevelView(true);
+    //     }
+    // }
 
     // Get Flag Emoji from country code
     function getFlagEmoji() {
@@ -190,6 +190,7 @@ export default function Profile({ navigation }) {
     const [flagEmoji, setFlagEmoji] = useState(null);
     useEffect(() => {
         console.log('getting emoji')
+        console.log(userInfo)
         getFlagEmoji();
     }, [userInfo])
 
@@ -216,7 +217,7 @@ export default function Profile({ navigation }) {
                                     onLoadStart={() => setIsLoading(true)}
                                     onLoadEnd={() => setIsLoading(false)}
                                     style={styles.profileImage}
-                                    source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${auth.currentUser.uid}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de` + '?' + onUpdateImage }}></Image>
+                                    source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${auth.currentUser.uid}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` + '?' + onUpdateImage }}></Image>
                             )}
                             {/* {isLoading && ( // This is where the loading indicator will be rendered
                                 <View style={styles.loadingContainer}>
@@ -231,11 +232,11 @@ export default function Profile({ navigation }) {
             </View>
             <View style={styles.profileNameContainer}>
                 <TouchableOpacity onPress={navigateChangeName}>
-                    <Text style={{ fontSize: 16, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userInfo.age}</Text></Text>
+                    <Text style={{ fontSize: 16, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userInfo.level}</Text></Text>
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity onPress={handlePressLevel} style={[styles.bioBarContainer, !levelView && styles.bioBarExpContainer, levelView]}>
+            {/* <TouchableOpacity onPress={handlePressLevel} style={[styles.bioBarContainer, !levelView && styles.bioBarExpContainer, levelView]}>
                 <View style={[styles.bioBarLevel, !levelView && styles.bioBarExp, levelView, !levelView && userInfo.exp <= 15 ? { width: `14%` } : null, !levelView && userInfo.exp > 15 ? { width: `${userInfo.exp}%` } : null]}>
                     {levelView && (
                         <View style={styles.levelView}>
@@ -249,6 +250,11 @@ export default function Profile({ navigation }) {
                         </View>
                     )}
                 </View>
+            </TouchableOpacity> */}
+
+            <TouchableOpacity style={styles.bioBar}>
+                <Text>Friends</Text>
+                <Text style={styles.greenText}>{(userInfo.friends.friendArr).length}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={navigateChangeGender} style={styles.bioBar}>

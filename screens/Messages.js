@@ -122,7 +122,7 @@ export default function Messages({ navigation }) {
     return (
       <TouchableOpacity onLongPress={() => setChatID(item[1])} onPress={() => handleClick(item)} style={styles.messageGroup}>
         <View style={{ flex: 1 }}>
-          <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/tangoh-2b4f6.appspot.com/o/pfps%2F${item[1]}.jpg?alt=media&token=e912bcd5-1111-4249-b9d7-3c843492e4de`}}></Image>
+          <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item[1]}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
         </View>
 
         {/* Message Content */}
