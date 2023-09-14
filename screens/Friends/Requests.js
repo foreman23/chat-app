@@ -3,8 +3,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react';
 import { useEffect, useContext } from 'react';
 import { UserContext } from '../Context/UserContext';
+import { firestore, auth } from '../../firebase';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc, collection, query, getDocs, where, arrayRemove } from 'firebase/firestore';
 
-const FriendsList = ({ navigation }) => {
+
+const Requests = ({ navigation }) => {
 
     // Grab UserContext
     const { userInfo, setUserInfo } = useContext(UserContext);
@@ -14,7 +17,38 @@ const FriendsList = ({ navigation }) => {
         navigation.goBack();
     }
 
-    // Render the friend items
+    // Accept friend request
+    const acceptRequest = async (theirUID) => {
+        console.log('accept')
+        try {
+            docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests")
+            docRef2 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends")
+            docRef3 = doc(firestore, "userInfo", theirUID, "pairing", "friend_requests")
+            docRef4 = doc(firestore, "userInfo", theirUID, "pairing", "friends")
+            await updateDoc(docRef1, {
+                incomingArr: arrayRemove(theirUID),
+            })
+            await updateDoc(docRef2, {
+                friendArr: arrayUnion(theirUID),
+            })
+            await updateDoc(docRef3, {
+                outgoingArr: arrayRemove(auth.currentUser.uid),
+            })
+            await updateDoc(docRef4, {
+                friendArr: arrayUnion(auth.currentUser.uid),
+            })
+        }
+        catch (error) {
+            console.error("Error accepting friend request:", error);
+        }
+    }
+
+    // Deny friend request
+    const denyRequest = () => {
+        console.log('deny')
+    }
+
+    // Render the request items
     const renderItem = ({ item }) => {
         console.log(item)
         return (
@@ -26,11 +60,14 @@ const FriendsList = ({ navigation }) => {
                 <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1, }}>
                     <Text>{item}</Text>
                     {/* <Text>Level: {item.level}</Text>
-                    <Text>{flagEmoji}</Text> */}
+                        <Text>{flagEmoji}</Text> */}
                 </View>
-                <View style={{ justifyContent: 'center', alignItems: 'flex-end', marginRight: 30, marginTop: 2.5 }}>
-                    <Pressable>
-                        <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', marginRight: 10, marginTop: 2.5 }}>
+                    <Pressable onPress={() => acceptRequest(item)} style={{ marginRight: 8 }}>
+                        <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='checkmark-outline'></Icon>
+                    </Pressable>
+                    <Pressable onPress={denyRequest}>
+                        <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='close-outline'></Icon>
                     </Pressable>
                 </View>
             </View>
@@ -39,15 +76,15 @@ const FriendsList = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar style="auto" />
             <View style={styles.headerBar}>
+                <StatusBar style="auto" />
                 <TouchableOpacity onPress={handleBack}>
                     <Icon size={30} name='chevron-back'></Icon>
                 </TouchableOpacity>
             </View>
             <View>
                 <FlatList
-                    data={userInfo.friends.friendArr}
+                    data={userInfo.friend_requests.incomingArr}
                     renderItem={renderItem}
                     key={'+'}
                     keyExtractor={(item) => "+" + item}
@@ -58,7 +95,7 @@ const FriendsList = ({ navigation }) => {
     )
 }
 
-export default FriendsList
+export default Requests
 
 const styles = StyleSheet.create({
     container: {

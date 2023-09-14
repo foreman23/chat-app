@@ -1,14 +1,19 @@
 import { StyleSheet, Text, View, Pressable, TouchableOpacity, TextInput, TouchableWithoutFeedback, Keyboard, StatusBar, FlatList, Image } from 'react-native'
 import React from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useRef, useState } from 'react';
+import { useRef, useState, useContext } from 'react';
 import BackButton from '../../components/BackButton'
 import { firestore, auth } from '../../firebase';
+import { UserContext } from '../Context/UserContext';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc, collection, query, getDocs, where } from 'firebase/firestore';
 
 
 
 export default function AddFriend({ navigation }) {
+
+  // Grab UserContext
+  const { userInfo, setUserInfo } = useContext(UserContext);
+  console.log(userInfo)
 
   // Open keyboard for search
   const textInputRef = useRef(null);
@@ -16,6 +21,15 @@ export default function AddFriend({ navigation }) {
     textInputRef.current.focus();
   };
 
+  // Navigate to FriendsList
+  const handleFriendsList = () => {
+    navigation.push('FriendsList');
+  }
+
+  // Navigate to Requests
+  const handleRequests = () => {
+    navigation.push('Requests');
+  }
 
   // State variable for holding current search input
   const [searchText, setSearchText] = useState('');
@@ -72,12 +86,19 @@ export default function AddFriend({ navigation }) {
     }
   }
 
-  // Render the category items
+  // Render the user items
   const renderItem = ({ item }) => {
     console.log(item)
     const flagEmoji = getFlagEmoji(item.location.country_code);
+
+    // Check if already friends with this user
+    let alreadyFriends = false;
+    if (userInfo.friends.friendArr.includes(item.uid)) {
+      alreadyFriends = true;
+    }
+
     return (
-      <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 12, margin: 10, padding: 5,}}>
+      <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 24, margin: 10, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 2}}>
         <Image
           style={styles.profileImage}
           source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item.uid}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` }}>
@@ -89,7 +110,12 @@ export default function AddFriend({ navigation }) {
         </View>
         <View style={{ justifyContent: 'center', alignItems: 'flex-end', marginRight: 30, marginTop: 2.5 }}>
           <Pressable onPress={() => sendFriendRequest(item.uid)}>
-            <Icon style={styles.icon} size={30} color={'#5A8F7B'} name='add'></Icon>
+            {alreadyFriends ? (
+              <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
+            ) : (
+              <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='add'></Icon>
+            )}
+            
           </Pressable>
         </View>
       </View>
@@ -118,8 +144,16 @@ export default function AddFriend({ navigation }) {
                 <Icon name="search" size={20} color="#5A8F7B" />
               </View>
             </TouchableOpacity>
-
           </Pressable>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10, marginBottom: 10 }}>
+            <TouchableOpacity onPress={handleRequests} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>Requests</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleFriendsList} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>Friends</Text>
+            </TouchableOpacity>
+          </View>
 
           <View>
               <FlatList
@@ -171,6 +205,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 50,
     marginHorizontal: 5,
-    padding: 4,
+    padding: 8,
 },
 })

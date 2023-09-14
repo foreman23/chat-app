@@ -36,6 +36,12 @@ export default function Profile({ navigation }) {
         navigation.push('ChangePFP');
     }
 
+
+    // Navigate to FriendsList
+    const handleFriendsList = () => {
+        navigation.push('FriendsList');
+    }
+
     // List of interests
     const interests = ['Movies', 'Hiking', 'Reading', 'Gym', 'Writing', 'Fishing', 'Games']
     const renderItem = ({ item }) => {
@@ -252,7 +258,7 @@ export default function Profile({ navigation }) {
                 </View>
             </TouchableOpacity> */}
 
-            <TouchableOpacity style={styles.bioBar}>
+            <TouchableOpacity onPress={handleFriendsList} style={styles.bioBar}>
                 <Text>Friends</Text>
                 <Text style={styles.greenText}>{(userInfo.friends.friendArr).length}</Text>
             </TouchableOpacity>
