@@ -4,7 +4,7 @@ import React from 'react';
 import { useEffect, useContext } from 'react';
 import { UserContext } from '../Context/UserContext';
 import { firestore, auth } from '../../firebase';
-import { arrayRemove, arrayUnion, updateDoc, doc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, updateDoc, doc, collection, addDoc } from 'firebase/firestore';
 
 const FriendsList = ({ navigation }) => {
 
@@ -35,6 +35,26 @@ const FriendsList = ({ navigation }) => {
         }
     }
 
+    // Message friend handler
+    const handleMessageFriend = async (theirUID) => {
+        const chatID = `${auth.currentUser.uid}_${theirUID}`
+        console.log(chatID)
+        try {
+            const docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats")
+            const docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "private_chats")
+            await updateDoc(docRef1, {
+                pairArr: arrayUnion(chatID),
+            })
+            await updateDoc(docRef2, {
+                pairArr: arrayUnion(chatID),
+            })
+            navigation.push("Messenger")
+        }
+        catch (error) {
+            console.error("Error creating private message collection:", error);
+        }
+    }
+
 
     // Render the friend items
     const renderItem = ({ item }) => {
@@ -54,7 +74,7 @@ const FriendsList = ({ navigation }) => {
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', marginRight: 10, marginTop: 2.5 }}>
                             <Pressable>
-                                <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
+                                <Icon onPress={() => handleMessageFriend(item)} style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
                             </Pressable>
                             <Pressable onPress={() => handleDeleteFriend(item)}>
                                 <Icon style={styles.icon} size={20} color={'#ff6666'} name='person-remove-outline'></Icon>

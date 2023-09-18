@@ -13,7 +13,6 @@ export default function AddFriend({ navigation }) {
 
   // Grab UserContext
   const { userInfo, setUserInfo } = useContext(UserContext);
-  console.log(userInfo)
 
   // Open keyboard for search
   const textInputRef = useRef(null);
@@ -41,7 +40,6 @@ export default function AddFriend({ navigation }) {
 
     const q = query(collection(firestore, "userInfo"), where("name", "==", searchText));
     const querySnapshot = await getDocs(q);
-    const querySize = querySnapshot.size;
     if (querySnapshot.size === 0) {
       console.log('No accounts found')
     }
@@ -50,13 +48,14 @@ export default function AddFriend({ navigation }) {
       querySnapshot.forEach((doc) => {
         //console.log(doc.id, " => ", doc.data());
         let data = doc.data();
-        data['uid'] = doc.id
-        resultData.push(data)
+        if (doc.id !== auth.currentUser.uid) {
+          data['uid'] = doc.id
+          resultData.push(data)
+        }
       });
       setResultList(resultData)
     }
 
-    console.log(searchText);
   }
 
   // Get Flag Emoji from country code
@@ -96,7 +95,7 @@ export default function AddFriend({ navigation }) {
 
   // Render the user items
   const renderItem = ({ item }) => {
-    console.log(item)
+    //console.log(item)
     const flagEmoji = getFlagEmoji(item.location.country_code);
 
     // Check if already friends with this user
@@ -106,7 +105,7 @@ export default function AddFriend({ navigation }) {
     }
 
     return (
-      <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 24, margin: 10, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 2}}>
+      <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 24, margin: 10, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 2 }}>
         {item.defaultPfp ? (
           <Image
             style={styles.profileImage}
@@ -160,6 +159,7 @@ export default function AddFriend({ navigation }) {
                 style={styles.searchBox}
                 placeholder='Search for @username'
                 keyboardType='web-search'
+                autoCapitalize='none'
                 ref={textInputRef}
               />
             </View>
@@ -172,6 +172,9 @@ export default function AddFriend({ navigation }) {
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10, marginBottom: 10 }}>
             <TouchableOpacity onPress={handleRequests} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{(userInfo.friend_requests.incomingArr).length}</Text>
+              </View>
               <Text style={{ color: 'white', textAlign: 'center' }}>Requests</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleFriendsList} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
@@ -180,14 +183,14 @@ export default function AddFriend({ navigation }) {
           </View>
 
           <View>
-              <FlatList
-                data={resultList}
-                renderItem={renderItem}
-                key={'+'}
-                keyExtractor={(item) => "+" + item.uid}
-              >
-              </FlatList>
-            </View>
+            <FlatList
+              data={resultList}
+              renderItem={renderItem}
+              key={'+'}
+              keyExtractor={(item) => "+" + item.uid}
+            >
+            </FlatList>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </View>
@@ -199,6 +202,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  badge: {
+    position: 'absolute',
+    top: -5, // Adjust the position as needed
+    right: 0, // Adjust the position as needed
+    backgroundColor: 'red', // Badge background color
+    borderRadius: 10, // Make it a circle
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: 'white', // Badge text color
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   searchContainer: {
     borderWidth: 1,
@@ -230,5 +249,5 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginHorizontal: 5,
     padding: 8,
-},
+  },
 })

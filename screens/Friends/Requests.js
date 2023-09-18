@@ -38,13 +38,13 @@ const Requests = ({ navigation }) => {
                 friendArr: arrayUnion(auth.currentUser.uid),
             })
             // Retrieve updated friends list from firestore
-            const friendsSnap = await getDoc(docRef2);
-            if (friendsSnap.exists()) {
-                await setUserInfo((prevUser) => ({ ...prevUser, friends: friendsSnap.data()}))
-                // Remove index of request from incomingArr
-                const updatedIncomingArr = userInfo.friend_requests.incomingArr.filter(uid => uid !== theirUID);
-                await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: {...prevUser.friend_requests, incomingArr: updatedIncomingArr} }))
-            }
+            // const friendsSnap = await getDoc(docRef2);
+            // if (friendsSnap.exists()) {
+            //     await setUserInfo((prevUser) => ({ ...prevUser, friends: friendsSnap.data()}))
+            //     // Remove index of request from incomingArr
+            //     const updatedIncomingArr = userInfo.friend_requests.incomingArr.filter(uid => uid !== theirUID);
+            //     await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: {...prevUser.friend_requests, incomingArr: updatedIncomingArr} }))
+            // }
         }
         catch (error) {
             console.error("Error accepting friend request:", error);
@@ -52,8 +52,21 @@ const Requests = ({ navigation }) => {
     }
 
     // Deny friend request
-    const denyRequest = () => {
-        console.log('deny')
+    const denyRequest = async (theirUID) => {
+        console.log(theirUID)
+        try {
+            docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests")
+            docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "friend_requests")
+            await updateDoc(docRef1, {
+                incomingArr: arrayRemove(theirUID),
+            })
+            await updateDoc(docRef2, {
+                outgoingArr: arrayRemove(auth.currentUser.uid),
+            })
+        }
+        catch (error) {
+            console.error("Error rejecting friend request:", error);
+        }
     }
 
     // Render the request items
@@ -74,7 +87,7 @@ const Requests = ({ navigation }) => {
                     <Pressable onPress={() => acceptRequest(item)} style={{ marginRight: 8 }}>
                         <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='checkmark-outline'></Icon>
                     </Pressable>
-                    <Pressable onPress={denyRequest}>
+                    <Pressable onPress={() => denyRequest(item)}>
                         <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='close-outline'></Icon>
                     </Pressable>
                 </View>

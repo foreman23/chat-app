@@ -8,9 +8,9 @@ import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 
 export default function Messenger({ navigation, route }) {
 
-    const prop = route.params?.prop;
-    console.log("PROP HERE:", prop);
-    console.log(prop.length)
+    // const prop = route.params?.prop;
+    // console.log("PROP HERE:", prop);
+    // console.log(prop.length)
 
 
     // Handles navigate to previous page depending on whether new match or not
