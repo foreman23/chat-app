@@ -37,6 +37,14 @@ const Requests = ({ navigation }) => {
             await updateDoc(docRef4, {
                 friendArr: arrayUnion(auth.currentUser.uid),
             })
+            // Retrieve updated friends list from firestore
+            const friendsSnap = await getDoc(docRef2);
+            if (friendsSnap.exists()) {
+                await setUserInfo((prevUser) => ({ ...prevUser, friends: friendsSnap.data()}))
+                // Remove index of request from incomingArr
+                const updatedIncomingArr = userInfo.friend_requests.incomingArr.filter(uid => uid !== theirUID);
+                await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: {...prevUser.friend_requests, incomingArr: updatedIncomingArr} }))
+            }
         }
         catch (error) {
             console.error("Error accepting friend request:", error);

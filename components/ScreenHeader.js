@@ -1,8 +1,18 @@
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useContext } from 'react';
+import BadgeIcon from './BadgeIcon';
+import { UserContext } from '../screens/Context/UserContext';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { firestore, auth } from '../firebase';
+
+
 
 const ScreenHeader = (props) => {
+
+    // State variables for user context
+    const { userInfo, setUserInfo } = useContext(UserContext);
 
     // Go to settings screen
     const handleSettings = () => {
@@ -14,6 +24,52 @@ const ScreenHeader = (props) => {
         props.navigation.push('AddFriend');
     }
 
+    const getFriendRequests = async () => {
+        try {
+            const requestSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests"))
+            console.log(requestSnap.data())
+            await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: requestSnap.data() }))
+        }
+        catch (error) {
+            console.error("Error fetching document: ", error);
+        }
+    }
+
+    const getFriends = async () => {
+        try {
+            const friendSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends"))
+            console.log(friendSnap.data())
+            await setUserInfo((prevUser) => ({ ...prevUser, friends: friendSnap.data() }))
+        }
+        catch (error) {
+            console.error("Error fetching document: ", error);
+        }
+    }
+
+    // Setup the listeners
+    useEffect(() => {
+        const unsubRequests = onSnapshot(
+            doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests"),
+            (doc) => {
+                console.log('CHANGES DETECTED TO FRIEND REQUESTS DOC')
+                // Get updated friend_requests from firestore
+                getFriendRequests();
+            }
+        )
+        const unsubFriends = onSnapshot(
+            doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends"),
+            (doc) => {
+                console.log('CHANGES DETECTED TO FRIENDS DOC')
+                // Get updated friend_requests from firestore
+                getFriends();
+            }
+        )
+        return () => {
+            unsubRequests();
+            unsubFriends();
+        }
+    }, [])
+
     return (
         <View style={styles.headerBar}>
             <Text style={{ fontSize: 18, fontWeight: 500 }}>{props.title}</Text>
@@ -22,7 +78,7 @@ const ScreenHeader = (props) => {
                     <ActivityIndicator style={styles.icon} color={'#5A8F7B'}></ActivityIndicator>
                 </Pressable> */}
                 <Pressable hitSlop={10} onPress={handleFriends}>
-                    <Icon style={styles.icon} name='people-outline' size={25} color={'#5A8F7B'}></Icon>
+                    <BadgeIcon style={styles.icon} name='people-outline' size={25} color={'#5A8F7B'} badgeCount={(userInfo.friend_requests.incomingArr).length}></BadgeIcon>
                 </Pressable>
                 <Pressable hitSlop={10} onPress={handleSettings}>
                     <Icon style={styles.icon} name='settings-outline' size={25} color={'#5A8F7B'}></Icon>

@@ -237,8 +237,8 @@ export default function Profile({ navigation }) {
                 </TouchableOpacity>
             </View>
             <View style={styles.profileNameContainer}>
-                <TouchableOpacity onPress={navigateChangeName}>
-                    <Text style={{ fontSize: 16, color: '#323232' }}>{userInfo.name}<Text style={styles.greenTextAge}>  {userInfo.level}</Text></Text>
+                <TouchableOpacity>
+                    <Text style={{ fontSize: 16, color: '#323232' }}>@{userInfo.name}<Text style={styles.greenTextAge}>  {userInfo.level}</Text></Text>
                 </TouchableOpacity>
             </View>
 

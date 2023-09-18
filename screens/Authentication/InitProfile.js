@@ -1,10 +1,11 @@
 import { KeyboardAvoidingView, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, StatusBar, TouchableWithoutFeedback, Platform } from 'react-native'
 import { React, useContext, useEffect, useState } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons';
-import { auth } from '../../firebase';
+import { auth, firestore } from '../../firebase';
 import ProgressBar from 'react-native-progress/Bar';
 import { UserContext } from '../Context/UserContext';
 import { PairContext } from '../Context/PairContext';
+import { collection, where, query, getDocs } from 'firebase/firestore';
 
 const InitProfile = ({ navigation }) => {
 
@@ -21,18 +22,25 @@ const InitProfile = ({ navigation }) => {
 
     // Update name property of context
     async function updateName() {
-        // Check for invalid chars (numbers, symbols)
-        const hasNumbers = /\d/.test(name);
-        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(name);
-        if (name.length >= 1 && name.length <= 30 && !hasNumbers && !hasSymbol) {
+
+        // Check if username is already taken
+        const q = query(collection(firestore, "userInfo"), where("name", "==", name));
+        const querySnapshot = await getDocs(q);
+        const querySize = querySnapshot.size;
+        if (querySnapshot.size === 0) {
+            console.log('Name not taken')
+        }
+
+        if (name.length >= 3 && name.length <= 20 && querySize === 0) {
             await setUserInfo((prevUser) => ({ ...prevUser, name: name}));
             handleNext();
         }
-        else if (hasSymbol || hasNumbers) {
-            console.warn('Name cannot contain numbers or symbols')
+        else if (querySize !== 0) {
+            console.warn('Name already taken, please try again')
         }
+
         else {
-            console.warn('Name must be between 1 and 30 characters');
+            console.warn('Name must be between 3 and 20 characters');
         }
     }
 
@@ -60,10 +68,10 @@ const InitProfile = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.headerText}>What is your name?</Text>
+                        <Text style={styles.headerText}>Choose a username</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder='Name'
+                            placeholder='username'
                             placeholderTextColor='#A9A9A9'
                             keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'visible-password'}
                             autoCapitalize='words'

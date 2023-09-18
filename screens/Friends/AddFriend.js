@@ -37,25 +37,26 @@ export default function AddFriend({ navigation }) {
   // Handles search when triggered
   const handleExecuteSearch = async () => {
     console.log("READING FROM FIRESTORE");
+    resultData = [];
 
-    let resultData = [];
-    const searchTextLower = searchText.toLowerCase();
-
-    const q = query(collection(firestore, "userInfo"));
+    const q = query(collection(firestore, "userInfo"), where("name", "==", searchText));
     const querySnapshot = await getDocs(q);
+    const querySize = querySnapshot.size;
+    if (querySnapshot.size === 0) {
+      console.log('No accounts found')
+    }
 
-    querySnapshot.forEach((doc) => {
-      const username = doc.data().name.toLowerCase();
-      //console.log(doc.id, " => ", doc.data());
-      if (username.includes(searchTextLower) && doc.id !== auth.currentUser.uid) {
+    else {
+      querySnapshot.forEach((doc) => {
+        //console.log(doc.id, " => ", doc.data());
         let data = doc.data();
         data['uid'] = doc.id
         resultData.push(data)
-      }
-    });
-    console.log(resultData.length)
-    setResultList(resultData)
-    //console.log(searchText);
+      });
+      setResultList(resultData)
+    }
+
+    console.log(searchText);
   }
 
   // Get Flag Emoji from country code
@@ -68,6 +69,10 @@ export default function AddFriend({ navigation }) {
   }
 
   const sendFriendRequest = async (theirUID) => {
+    setPressedStates((prevState) => ({
+      ...prevState,
+      [theirUID]: true,
+    }))
     try {
       const docRef1 = doc(firestore, "userInfo", theirUID, "pairing", "friend_requests");
       const docRef2 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests");
@@ -86,6 +91,9 @@ export default function AddFriend({ navigation }) {
     }
   }
 
+  // State for holding pressed user buttons
+  const [pressedStates, setPressedStates] = useState({});
+
   // Render the user items
   const renderItem = ({ item }) => {
     console.log(item)
@@ -99,24 +107,40 @@ export default function AddFriend({ navigation }) {
 
     return (
       <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 24, margin: 10, paddingHorizontal: 5, paddingVertical: 10, marginBottom: 2}}>
-        <Image
-          style={styles.profileImage}
-          source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item.uid}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` }}>
-        </Image>
+        {item.defaultPfp ? (
+          <Image
+            style={styles.profileImage}
+            source={require('../../assets/placeholderPFP.png')}>
+          </Image>
+        ) : (
+          <Image
+            style={styles.profileImage}
+            source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item.uid}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` }}>
+          </Image>
+        )}
         <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1, }}>
-          <Text>{item.name}</Text>
+          <Text>@{item.name}</Text>
           <Text>Level: {item.level}</Text>
           <Text>{flagEmoji}</Text>
         </View>
         <View style={{ justifyContent: 'center', alignItems: 'flex-end', marginRight: 30, marginTop: 2.5 }}>
-          <Pressable onPress={() => sendFriendRequest(item.uid)}>
-            {alreadyFriends ? (
-              <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
-            ) : (
-              <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='add'></Icon>
-            )}
-            
-          </Pressable>
+          {pressedStates[item.uid] || userInfo.friend_requests.incomingArr.includes(item.uid) || userInfo.friend_requests.outgoingArr.includes(item.uid) || alreadyFriends ? (
+            <Pressable disabled>
+              {alreadyFriends ? (
+                <Icon style={styles.icon} size={20} color={'#D2D2D2'} name='chatbox-outline'></Icon>
+              ) : (
+                <Icon style={styles.icon} size={20} color={'#D2D2D2'} name='checkmark-outline'></Icon>
+              )}
+            </Pressable>
+          ) : (
+            <Pressable onPress={() => sendFriendRequest(item.uid)}>
+              {alreadyFriends ? (
+                <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
+              ) : (
+                <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='add'></Icon>
+              )}
+            </Pressable>
+          )}
         </View>
       </View>
     )
@@ -134,7 +158,7 @@ export default function AddFriend({ navigation }) {
               <TextInput
                 onChangeText={text => setSearchText(text)}
                 style={styles.searchBox}
-                placeholder='Search'
+                placeholder='Search for @username'
                 keyboardType='web-search'
                 ref={textInputRef}
               />

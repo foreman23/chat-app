@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator
 import { useState, useContext, useEffect } from 'react';
 import { auth } from '../firebase';
 import { firestore } from '../firebase';
-import { arrayUnion, doc, getDoc, setDoc, updateDoc, collection, query, getDocs } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc, collection, query, getDocs, onSnapshot, where } from 'firebase/firestore';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ScreenHeader from '../components/ScreenHeader';
 import { UserContext } from './Context/UserContext';
@@ -61,6 +61,8 @@ export default function FindMatch({ navigation }) {
 
   };
 
+
+
   // Render the category items
   const renderItem = ({ item }) => {
     return (
@@ -89,6 +91,22 @@ export default function FindMatch({ navigation }) {
     }
   }
 
+  // const [callbackRequests, setCallbackRequests] = useState(true);
+  // // Snapshot listener for friend_request change
+  // const unsub = onSnapshot(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests"), (doc) => {
+  //   if (callbackRequests === false) {
+  //     console.log('document changed', doc.data())
+  //     return () => {
+  //       unsub();
+  //     }
+  //   }
+  //   else {
+  //     setCallbackRequests(false);
+  //   }
+  // })
+
+  // // Snapshot listener for friends list change
+
 
   useEffect(() => {
     // Call the readUserData function when the component mounts or whenever the auth.currentUser.email changes
@@ -96,7 +114,7 @@ export default function FindMatch({ navigation }) {
       console.log("READING user state from firestore:")
       console.log(userInfo)
       readUserData();
-      getCategories();
+      //getCategories();
     }
 
     else {
