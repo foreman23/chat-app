@@ -17,17 +17,23 @@ const FriendsList = ({ navigation }) => {
     }
 
     // Delete friend handler
-    const handleDeleteFriend = async (theirUID) => {
+    const handleDeleteFriend = async (item) => {
+
+        // splitIDs[0] == UID, splitIDs[1] == name
+        let splitIDs = item.split("_");
+        console.log(splitIDs[0])
+        console.log(splitIDs[1])
+
         try {
             const docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends");
-            const docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "friends")
+            const docRef2 = doc(firestore, "userInfo", splitIDs[0], "pairing", "friends")
             // Remove friend from your list
             await updateDoc(docRef1, {
-                friendArr: arrayRemove(theirUID),
+                friendArr: arrayRemove(item),
             })
             // Remove friend from their list
             await updateDoc(docRef2, {
-                friendArr: arrayRemove(auth.currentUser.uid),
+                friendArr: arrayRemove(`${auth.currentUser.uid}_${userInfo.name}`),
             })
         }
         catch (error) {
