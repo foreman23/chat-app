@@ -42,11 +42,17 @@ const FriendsList = ({ navigation }) => {
     }
 
     // Message friend handler
-    const handleMessageFriend = async (theirUID) => {
-        const chatID = `${auth.currentUser.uid}_${theirUID}`
+    const handleMessageFriend = async (item) => {
+
+        // splitIDs[0] == UID, splitIDs[1] == name
+        let splitIDs = item.split("_");
+        console.log(splitIDs[0])
+        console.log(splitIDs[1])
+
+        const chatID = `${auth.currentUser.uid}_${splitIDs[0]}`
         // console.log(chatID)
         // console.log(userInfo)
-        item = ["todd", theirUID, chatID]
+        item = [splitIDs[1], splitIDs[0], chatID]
 
         // Check if chat already exists
         if (userInfo.private_chats.pairArr.includes(chatID)) {
@@ -54,7 +60,7 @@ const FriendsList = ({ navigation }) => {
             return
         }
 
-        if (userInfo.private_chats.pairArr.includes(`${theirUID}_${auth.currentUser.uid}`)) {
+        if (userInfo.private_chats.pairArr.includes(`${splitIDs[0]}_${auth.currentUser.uid}`)) {
             navigation.push('Messenger', { prop: item });
             return
         }
@@ -64,7 +70,7 @@ const FriendsList = ({ navigation }) => {
             try {
                 console.log("WRITING NEW CHAT TO FIRESTORE");
                 const docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats");
-                const docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "private_chats");
+                const docRef2 = doc(firestore, "userInfo", splitIDs[0], "pairing", "private_chats");
 
                 await updateDoc(docRef1, {
                     pairArr: arrayUnion(chatID),
