@@ -41,26 +41,51 @@ export default function Messenger({ navigation, route }) {
     }
 
     // Grab chat message data
-    const grabChatData = async () => {
-        if (auth.currentUser) {
-            try {
-                console.log('READING FROM FIRESTORE')
+    // const grabChatData = async () => {
+    //     if (auth.currentUser) {
+    //         try {
+    //             console.log('READING FROM FIRESTORE')
 
-                // Get all messages from chat room subcollection
-                const querySnapshot = await getDocs(collection(firestore, "private_chats", prop[2], "messages"));
-                querySnapshot.forEach((doc) => {
-                    // doc.data() is never undefined for query doc snapshots
-                    console.log(doc.id, " => ", doc.data());
-                });
+    //             // Get all messages from chat room subcollection
+    //             const querySnapshot = await getDocs(collection(firestore, "private_chats", prop[2], "messages"));
+    //             querySnapshot.forEach((doc) => {
+    //                 // doc.data() is never undefined for query doc snapshots
+    //                 console.log(doc.id, " => ", doc.data());
+    //             });
 
-                // if (docSnap.exists()) {
-                //     console.log(docSnap.data())
-                // }
-            }
-            catch(error) {
-                console.error("Error fetching document: ", error);
-            }
+    //             // if (docSnap.exists()) {
+    //             //     console.log(docSnap.data())
+    //             // }
+    //         }
+    //         catch(error) {
+    //             console.error("Error fetching document: ", error);
+    //         }
+    //     }
+    // }
+
+    // Parse chat name for username and uid
+    const [matchedUserName, setMatchedUserName] = useState(null);
+    const [matchedUserUid, setMatchedUserUid] = useState(null);
+    const parseChatID = () => {
+        // splitIDs[0] == UID 1, splitIDs[1] == Name 1
+        // splitIDs[2] == UID 2, splitIDs[3] == Name 2
+        let splitIDs = prop.split("_");
+        // console.log(splitIDs[0])
+        // console.log(splitIDs[1])
+        // console.log(splitIDs[2])
+        // console.log(splitIDs[3])
+        theirUID = '';
+        theirName = '';
+        if (auth.currentUser.uid === splitIDs[0]) {
+            theirUID = splitIDs[2];
+            theirName = splitIDs[3]
         }
+        else if (auth.currentUser.uid === splitIDs[2]) {
+            theirUID = splitIDs[0];
+            theirName = splitIDs[1]
+        }
+        setMatchedUserName(theirName);
+        setMatchedUserUid(theirUID);
     }
 
     // Open keyboard for search
@@ -72,9 +97,12 @@ export default function Messenger({ navigation, route }) {
     // On page load
     useEffect(() => {
         //grabChatData();
+        parseChatID();
+        console.log("THIS IS THE PROP:", prop)
     }, [])
 
     return (
+        
         <View style={styles.container}>
             <StatusBar style="auto" />
 
@@ -86,11 +114,11 @@ export default function Messenger({ navigation, route }) {
                 </View>
 
                 <View style={{ borderWidth: 0, flex: 1 }}>
-                    <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${prop[1]}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
+                    <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${matchedUserUid}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
                 </View>
 
                 <View style={{ borderWidth: 0, flex: 4, justifyContent: 'center', marginLeft: 20 }}>
-                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{prop[0]}</Text>
+                    <Text style={{ color: '#5A8F7B', fontWeight: '600' }}>{matchedUserName}</Text>
                 </View>
                 <View style={{ borderWidth: 0, flex: 1, justifyContent: 'center', marginTop: 3 }}>
                     <Icon size={20} color={'#323232'} name='ellipsis-vertical-sharp'></Icon>

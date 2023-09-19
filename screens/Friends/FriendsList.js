@@ -49,19 +49,19 @@ const FriendsList = ({ navigation }) => {
         console.log(splitIDs[0])
         console.log(splitIDs[1])
 
-        const chatID = `${auth.currentUser.uid}_${splitIDs[0]}`
+        const chatID = `${auth.currentUser.uid}_${userInfo.name}_${splitIDs[0]}_${splitIDs[1]}`
         // console.log(chatID)
         // console.log(userInfo)
         item = [splitIDs[1], splitIDs[0], chatID]
 
         // Check if chat already exists
         if (userInfo.private_chats.pairArr.includes(chatID)) {
-            navigation.push('Messenger', { prop: item });
+            navigation.push('Messenger', { prop: chatID });
             return
         }
 
-        if (userInfo.private_chats.pairArr.includes(`${splitIDs[0]}_${auth.currentUser.uid}`)) {
-            navigation.push('Messenger', { prop: item });
+        if (userInfo.private_chats.pairArr.includes(`${splitIDs[0]}_${splitIDs[1]}_${auth.currentUser.uid}_${userInfo.name}`)) {
+            navigation.push('Messenger', { prop: chatID });
             return
         }
 
@@ -92,7 +92,7 @@ const FriendsList = ({ navigation }) => {
                 }
                 await addDoc(colRef, messageData);
 
-                navigation.push('Messenger', { prop: item });
+                navigation.push('Messenger', { prop: chatID });
             }
             catch (error) {
                 console.error("Error creating private message collection:", error);

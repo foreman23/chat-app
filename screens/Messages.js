@@ -43,31 +43,30 @@ export default function Messages({ navigation }) {
 
     // uidArr index 0 = matched users uids, index 1 = joint chat ids
     const uidArr = parseChatID(chatID);
-
-    console.log("RETURNED PAYLOAD: ", uidArr[1][0])
+    console.log("RETURNED PAYLOAD: ", uidArr[1])
 
     //console.log("CHATID: ", uidArr[1])
 
     console.log("CONVERTING UIDS TO NAMES")
     for (let i = 0; i < uidArr[0].length; i++) {
-      if (auth.currentUser) {
-        try {
-          console.log('READING FROM FIRESTORE')
+       if (auth.currentUser) {
+         try {
+           console.log('READING FROM FIRESTORE')
 
-          const docRef = doc(firestore, "userInfo", uidArr[0][i])
-          const docSnap = await getDoc(docRef)
+           const docRef = doc(firestore, "userInfo", uidArr[0][i])
+           const docSnap = await getDoc(docRef)
 
 
-          if (docSnap.exists()) {
-            // Stores username as index 0, stores UID as index 1, stores CHATID as index 2 of subarray
-            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i] ]
-          }
-        }
-        catch (error) {
-          console.error("Error fetching document: ", error);
-        }
-      }
-    }
+           if (docSnap.exists()) {
+             // Stores username as index 0, stores UID as index 1, stores CHATID as index 2 of subarray
+             uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i] ]
+           }
+         }
+         catch (error) {
+           console.error("Error fetching document: ", error);
+         }
+       }
+     }
     setMessageDataNames(uidArr);
 
   }
@@ -121,15 +120,30 @@ export default function Messages({ navigation }) {
   // Render message group
   const renderItem = ({ item }) => {
 
+    // splitIDs[0] == UID 1, splitIDs[1] == Name 1
+    // splitIDs[2] == UID 2, splitIDs[3] == Name 2
+    let splitIDs = item.split("_");
+
+    theirUID = '';
+    theirName = '';
+    if (auth.currentUser.uid === splitIDs[0]) {
+      theirUID = splitIDs[2];
+      theirName = splitIDs[3]
+    }
+    else if (auth.currentUser.uid === splitIDs[2]) {
+      theirUID = splitIDs[0];
+      theirName = splitIDs[1]
+    }
+
     return (
-      <TouchableOpacity onLongPress={() => setChatID(item[1])} onPress={() => handleClick(item)} style={styles.messageGroup}>
+      <TouchableOpacity onLongPress={() => setChatID(item)} onPress={() => handleClick(item)} style={styles.messageGroup}>
         <View style={{ flex: 1 }}>
-          <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item[1]}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
+          <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${theirUID}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
         </View>
 
         {/* Message Content */}
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', borderWidth: 0, flex: 3, marginLeft: 5 }}>
-          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{item[0]}</Text>
+          <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{theirName}</Text>
           <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.message}</Text>
         </View>
 
@@ -161,7 +175,7 @@ export default function Messages({ navigation }) {
   }
 
   // Once messageDataNames[0] is populated set loading false
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   useEffect(() => {
     if (messageDataNames && messageDataNames[0] !== undefined) {
     setIsLoading(false)
@@ -169,9 +183,9 @@ export default function Messages({ navigation }) {
   }, [messageDataNames])
 
   // On page load
-  useEffect(() => {
-    grabMessageData();
-  }, [])
+  // useEffect(() => {
+  //   grabMessageData();
+  // }, [])
 
 
   if (isLoading) {
@@ -221,7 +235,7 @@ export default function Messages({ navigation }) {
 
       <View style={styles.messageList}>
         <FlatList
-          data={messageDataNames[0]}
+          data={userInfo.private_chats.pairArr}
           renderItem={renderItem}
           key={'+'}
           keyExtractor={(item) => "+" + item}
