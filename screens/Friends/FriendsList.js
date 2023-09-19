@@ -4,7 +4,7 @@ import React from 'react';
 import { useEffect, useContext } from 'react';
 import { UserContext } from '../Context/UserContext';
 import { firestore, auth } from '../../firebase';
-import { arrayRemove, arrayUnion, updateDoc, doc, collection, addDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, updateDoc, doc, collection, addDoc, setDoc } from 'firebase/firestore';
 
 const FriendsList = ({ navigation }) => {
 
@@ -38,37 +38,77 @@ const FriendsList = ({ navigation }) => {
     // Message friend handler
     const handleMessageFriend = async (theirUID) => {
         const chatID = `${auth.currentUser.uid}_${theirUID}`
-        console.log(chatID)
-        try {
-            const docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats")
-            const docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "private_chats")
-            await updateDoc(docRef1, {
-                pairArr: arrayUnion(chatID),
-            })
-            await updateDoc(docRef2, {
-                pairArr: arrayUnion(chatID),
-            })
-            navigation.push("Messenger")
+        // console.log(chatID)
+        // console.log(userInfo)
+        item = ["todd", theirUID, chatID]
+
+        // Check if chat already exists
+        if (userInfo.private_chats.pairArr.includes(chatID)) {
+            navigation.push('Messenger', { prop: item });
+            return
         }
-        catch (error) {
-            console.error("Error creating private message collection:", error);
+
+        if (userInfo.private_chats.pairArr.includes(`${theirUID}_${auth.currentUser.uid}`)) {
+            navigation.push('Messenger', { prop: item });
+            return
         }
+
+        // Otherwise create the chat
+        else {
+            try {
+                console.log("WRITING NEW CHAT TO FIRESTORE");
+                const docRef1 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats");
+                const docRef2 = doc(firestore, "userInfo", theirUID, "pairing", "private_chats");
+
+                await updateDoc(docRef1, {
+                    pairArr: arrayUnion(chatID),
+                })
+
+                await updateDoc(docRef2, {
+                    pairArr: arrayUnion(chatID),
+                })
+
+                // Create the chat document
+                const chatDocRef = doc(firestore, "privateChats", chatID);
+                await setDoc(chatDocRef, {});
+
+                // Create the 'messages' subcollection
+                const colRef = collection(chatDocRef, "messages");
+                const messageData = {
+                    from: null,
+                    msg: null,
+                }
+                await addDoc(colRef, messageData);
+
+                navigation.push('Messenger', { prop: item });
+            }
+            catch (error) {
+                console.error("Error creating private message collection:", error);
+            }
+        }
+
     }
 
 
     // Render the friend items
     const renderItem = ({ item }) => {
         console.log(item)
+
+        // splitIDs[0] == UID, splitIDs[1] == name
+        let splitIDs = item.split("_");
+        console.log(splitIDs[0])
+        console.log(splitIDs[1])
+
         return (
             <View>
                 <TouchableOpacity onLongPress={() =>  console.log('debug')}>
                     <View style={{ borderWidth: 1, borderColor: '#D2D2D2', flexDirection: 'row', borderRadius: 24, margin: 10, paddingHorizontal: 5, paddingVertical: 10 }}>
                         <Image
                             style={styles.profileImage}
-                            source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${item}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` }}>
+                            source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${splitIDs[0]}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6` }}>
                         </Image>
                         <View style={{ flexDirection: 'column', justifyContent: 'center', flex: 1, }}>
-                            <Text>{item}</Text>
+                            <Text>{splitIDs[1]}</Text>
                             {/* <Text>Level: {item.level}</Text>
                     <Text>{flagEmoji}</Text> */}
                         </View>

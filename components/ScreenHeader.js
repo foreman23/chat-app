@@ -51,6 +51,20 @@ const ScreenHeader = (props) => {
         }
 
     }
+    
+    const getChats = async () => {
+        if (auth.currentUser) {
+            try {
+                const chatSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats"))
+                console.log(chatSnap.data())
+                await setUserInfo((prevUser) => ({ ...prevUser, private_chats: chatSnap.data() }))
+            }
+            catch (error) {
+                console.error("Error fetching document: ", error);
+            }
+        }
+
+    }
 
     // Setup the listeners
     useEffect(() => {
@@ -71,9 +85,18 @@ const ScreenHeader = (props) => {
                     getFriends();
                 }
             )
+            const unsubChats = onSnapshot(
+                doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats"),
+                (doc) => {
+                    console.log('CHANGES DETECTED TO PRIVATE_CHATS DOC')
+                    // Get updated friend_requests from firestore
+                    getChats();
+                }
+            )
             return () => {
                 unsubRequests();
                 unsubFriends();
+                unsubChats();
             }
         }
 

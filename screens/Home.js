@@ -26,9 +26,10 @@ export default function FindMatch({ navigation }) {
         const docRef = doc(firestore, "userInfo", auth.currentUser.uid);
         const docSnap = await getDoc(docRef);
 
-        // Grab friends list and friend requests
+        // Grab friends list, friend requests, and private_chats
         const friendsSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends"));
         const requestSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests"))
+        const chatSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats"))
         console.log(friendsSnap.data())
 
 
@@ -50,6 +51,7 @@ export default function FindMatch({ navigation }) {
           await setUserInfo((prevUser) => ({ ...prevUser, age: age }));
           await setUserInfo((prevUser) => ({ ...prevUser, friends: friendsSnap.data()}))
           await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: requestSnap.data()}))
+          await setUserInfo((prevUser) => ({ ...prevUser, private_chats: chatSnap.data()}))
           setIsLoading(false);
         } else {
           console.log("Document does not exist!");

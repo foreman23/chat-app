@@ -1,13 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable, Modal, ActivityIndicator, RefreshControl, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useContext } from 'react'
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { UserContext } from './Context/UserContext';
 
 import ScreenHeader from '../components/ScreenHeader';
 import { auth, firestore } from '../firebase';
 
 export default function Messages({ navigation }) {
+
+  // State variables for user context
+  const { userInfo, setUserInfo } = useContext(UserContext);
 
   // Open keyboard for search
   const textInputRef = useRef(null);
@@ -24,32 +28,27 @@ export default function Messages({ navigation }) {
   // Grab messageData from firestore
   const grabMessageData = async () => {
     if (auth.currentUser) {
-      try {
-        console.log('READING FROM FIRESTORE')
-
-        const docRef = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "matches")
-        const docSnap = await getDoc(docRef)
-
-        if (docSnap.exists()) {
-          convertToNames(docSnap.data().pairArr);
-        }
-
-      }
-      catch (error) {
-        console.error("Error fetching document: ", error);
+      //console.log(userInfo)
+      if (userInfo.private_chats.pairArr) {
+        //console.log(userInfo.private_chats.pairArr)
+        convertToNames(userInfo.private_chats.pairArr)
       }
     }
   }
 
-  // Convert user emails to user names
+  // Convert user uid to user names
   const convertToNames = async (chatID) => {
+
+    //console.log(chatID)
 
     // uidArr index 0 = matched users uids, index 1 = joint chat ids
     const uidArr = parseChatID(chatID);
 
-    //console.log(uidArr[1])
+    console.log("RETURNED PAYLOAD: ", uidArr[1][0])
 
-    console.log("CONVERTING EMAILS TO NAMES")
+    //console.log("CHATID: ", uidArr[1])
+
+    console.log("CONVERTING UIDS TO NAMES")
     for (let i = 0; i < uidArr[0].length; i++) {
       if (auth.currentUser) {
         try {
@@ -61,7 +60,7 @@ export default function Messages({ navigation }) {
 
           if (docSnap.exists()) {
             // Stores username as index 0, stores UID as index 1, stores CHATID as index 2 of subarray
-            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i].pairID ]
+            uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i] ]
           }
         }
         catch (error) {
@@ -77,11 +76,13 @@ export default function Messages({ navigation }) {
   // Parse the chatID from context to separate the user's ID and the matched user's ID
   const parseChatID = (chatIDArr) => {
 
+    //console.log(chatIDArr)
+
     // Create unbound copy of chatIDArr
     let chatIDArrCopy = [...chatIDArr]
 
     for (let i = 0; i < chatIDArr.length; i++){
-      let splitIDs = chatIDArr[i].pairID.split("_");
+      let splitIDs = chatIDArr[i].split("_");
       //console.log(splitIDs[0]) 
       //console.log(splitIDs[1])
       // Find matched user ID
@@ -95,6 +96,7 @@ export default function Messages({ navigation }) {
       chatIDArr[i] = theirUID;
     }
     let payload = [chatIDArr, chatIDArrCopy]
+    console.log("payload", payload)
 
     return payload;
   }

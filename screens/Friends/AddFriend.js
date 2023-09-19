@@ -67,21 +67,23 @@ export default function AddFriend({ navigation }) {
     return String.fromCodePoint(...codePoints);
   }
 
-  const sendFriendRequest = async (theirUID) => {
+  const sendFriendRequest = async (item) => {
     setPressedStates((prevState) => ({
       ...prevState,
-      [theirUID]: true,
+      [item.uid]: true,
     }))
     try {
-      const docRef1 = doc(firestore, "userInfo", theirUID, "pairing", "friend_requests");
+      const docRef1 = doc(firestore, "userInfo", item.uid, "pairing", "friend_requests");
       const docRef2 = doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests");
-      // Update other user's incoming requests with currentUser.uid
+      // Update other user's incoming requests with payload
+      incoming_payload = `${auth.currentUser.uid}_${userInfo.name}`
+      outgoing_payload = `${item.uid}_${item.name}`
       await updateDoc(docRef1, {
-        incomingArr: arrayUnion(auth.currentUser.uid),
+        incomingArr: arrayUnion(incoming_payload),
       })
-      // Update active user's outgoing requests with theirUID
+      // Update active user's outgoing requests with payload
       await updateDoc(docRef2, {
-        outgoingArr: arrayUnion(theirUID),
+        outgoingArr: arrayUnion(outgoing_payload),
       })
       console.log("WRITTEN to firestore")
     }
@@ -132,7 +134,7 @@ export default function AddFriend({ navigation }) {
               )}
             </Pressable>
           ) : (
-            <Pressable onPress={() => sendFriendRequest(item.uid)}>
+            <Pressable onPress={() => sendFriendRequest(item)}>
               {alreadyFriends ? (
                 <Icon style={styles.icon} size={20} color={'#5A8F7B'} name='chatbox-outline'></Icon>
               ) : (
@@ -172,9 +174,11 @@ export default function AddFriend({ navigation }) {
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10, marginBottom: 10 }}>
             <TouchableOpacity onPress={handleRequests} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{(userInfo.friend_requests.incomingArr).length}</Text>
-              </View>
+              {(userInfo.friend_requests.incomingArr).length > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{(userInfo.friend_requests.incomingArr).length}</Text>
+                </View>
+              )}
               <Text style={{ color: 'white', textAlign: 'center' }}>Requests</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleFriendsList} style={{ backgroundColor: '#5A8F7B', color: 'white', borderRadius: 32.5, padding: 20, flex: 2, textAlign: 'center', marginRight: 5, }}>
