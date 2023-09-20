@@ -89,6 +89,7 @@ const FriendsList = ({ navigation }) => {
                 const messageData = {
                     from: null,
                     msg: null,
+                    time: null,
                 }
                 await addDoc(colRef, messageData);
 

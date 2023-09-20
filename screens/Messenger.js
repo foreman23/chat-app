@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, ScrollView, Pressable } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, ScrollView, Pressable, ActivityIndicator, FlatList } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useRef, useEffect, useState } from 'react'
 import { auth, firestore } from '../firebase';
-import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, addDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 
 
 export default function Messenger({ navigation, route }) {
@@ -12,68 +12,68 @@ export default function Messenger({ navigation, route }) {
     // console.log("PROP HERE:", prop);
     // console.log(prop.length)
 
-
-    // Handles navigate to previous page depending on whether new match or not
-    // const handleBack = () => {
-    //     if (prop.length > 3) {
-    //         navigation.reset({
-    //             index: 0,
-    //             routes: [
-    //               {
-    //                 name: 'Main',
-    //                 state: {
-    //                   routes: [
-    //                     {
-    //                       name: 'Messages',
-    //                     },
-    //                   ],
-    //                 },
-    //               },
-    //             ],
-    //           });
-    //     }
-    //     else {
-    //         navigation.goBack();        // Saves resources by not resetting call to DB
-    //     }
-    // }
     const handleBack = () => {
         navigation.goBack();
     }
 
     // Grab chat message data
-    // const grabChatData = async () => {
-    //     if (auth.currentUser) {
-    //         try {
-    //             console.log('READING FROM FIRESTORE')
+    const [chatData, setChatData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const grabChatData = async () => {
+        if (matchedUserUid !== null && matchedUserName !== null) {
+            let msgArray = [];
 
-    //             // Get all messages from chat room subcollection
-    //             const querySnapshot = await getDocs(collection(firestore, "private_chats", prop[2], "messages"));
-    //             querySnapshot.forEach((doc) => {
-    //                 // doc.data() is never undefined for query doc snapshots
-    //                 console.log(doc.id, " => ", doc.data());
-    //             });
+            if (auth.currentUser) {
+                try {
+                    console.log('READING FROM FIRESTORE')
+    
+                    // Get all messages from chat room subcollection
+                    const messageRef = collection(firestore, "privateChats", prop, "messages")
+                    const querySnapshot = await getDocs(query(messageRef, orderBy("time")));
+                    querySnapshot.forEach((doc) => {
+                        // doc.data() is never undefined for query doc snapshots
+                        // console.log(doc.id, " => ", doc.data());
+                        msgArray.push(doc.data());
+                    });
+                    setChatData(msgArray);
+                    setIsLoading(false);
+                }
+                
+                catch(error) {
+                    console.error("Error fetching document: ", error);
+                }
+            }
+        }
+        
+    }
 
-    //             // if (docSnap.exists()) {
-    //             //     console.log(docSnap.data())
-    //             // }
-    //         }
-    //         catch(error) {
-    //             console.error("Error fetching document: ", error);
-    //         }
-    //     }
-    // }
+    // Send message
+    const [messageToSend, setMessageToSend] = useState(null);
+    const sendMessage = async () => {
+        if (messageToSend !== null && messageToSend.length > 0) {
+            console.log(messageToSend)
+            const currentDate = new Date();
+            try {
+                const messageData = {
+                    from: auth.currentUser.uid,
+                    msg: messageToSend,
+                    time: currentDate,
+                }
+                const chatDocRef = doc(firestore, "privateChats", prop);
+                const colRef = collection(chatDocRef, "messages");
+                await addDoc(colRef, messageData);
+            }
+            catch(error) {
+                console.error("Error sending message:", error);
+            }
+        }
+    }
 
     // Parse chat name for username and uid
     const [matchedUserName, setMatchedUserName] = useState(null);
     const [matchedUserUid, setMatchedUserUid] = useState(null);
     const parseChatID = () => {
-        // splitIDs[0] == UID 1, splitIDs[1] == Name 1
-        // splitIDs[2] == UID 2, splitIDs[3] == Name 2
         let splitIDs = prop.split("_");
-        // console.log(splitIDs[0])
-        // console.log(splitIDs[1])
-        // console.log(splitIDs[2])
-        // console.log(splitIDs[3])
         theirUID = '';
         theirName = '';
         if (auth.currentUser.uid === splitIDs[0]) {
@@ -88,11 +88,66 @@ export default function Messenger({ navigation, route }) {
         setMatchedUserUid(theirUID);
     }
 
+    // Responds to changes in chat collection
+    const getNewMessage = async (change) => {
+        if (auth.currentUser) {
+            try {
+                const doc = change.doc;
+                console.log("New document data:", doc.data());
+                setChatData((prevChatData) => [...prevChatData, doc.data()]);
+            } catch (error) {
+                console.error("Error fetching new message: ", error);
+            }
+        }
+    }
+
+    // Setup listener for new chat messages
+    useEffect(() => {
+        if (auth.currentUser) {
+            const unsubChat = onSnapshot(
+                collection(firestore, "privateChats", prop, "messages"),
+                (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            console.log('NEW CHAT DOCUMENT DETECTED')
+                            getNewMessage(change);
+                        }
+                    })
+                }
+            )
+            return () => {
+                unsubChat();
+            }
+        }
+    }, [prop])
+
+
     // Open keyboard for search
     const textInputRef = useRef(null);
     const handleSearchPress = () => {
         textInputRef.current.focus();
     };
+
+    // Render the message item
+    const renderItem = ({ item }) => {
+
+        // !== null must be included to avoid dummy message
+        if (item.from !== auth.currentUser.uid && item.from !== null) {
+            return (
+                <View style={styles.receivedMessagesContainer}>
+                    <Text style={styles.receivedMessages}>{item.msg}</Text>
+                </View>
+            )
+        }
+
+        else if (item.from !== null) {
+            return (
+                <View style={styles.sentMessagesContainer}>
+                    <Text style={styles.sentMessages}>{item.msg}</Text>
+                </View>
+            )
+        }
+    }
 
     // On page load
     useEffect(() => {
@@ -100,6 +155,19 @@ export default function Messenger({ navigation, route }) {
         parseChatID();
         console.log("THIS IS THE PROP:", prop)
     }, [])
+
+    // Once state variables are populated
+    useEffect(() => {
+        grabChatData();
+    }, [matchedUserUid])
+
+    if (isLoading) {
+        return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size='large' color='#5A8F7B'></ActivityIndicator>
+          </View>
+        )
+      }
 
     return (
         
@@ -125,28 +193,28 @@ export default function Messenger({ navigation, route }) {
                 </View>
             </View>
 
-            {/* PLACEHOLDER DUMMY MESSAGES */}
-            <ScrollView>
-                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
-                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Hi! Thanks for reaching out. I'm glad you found my profile intriguing. I'd love to chat and get to know you better. So, tell me, what caught your attention?</Text></View>
-                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Well, besides your beautiful smile, I noticed we share a love for adventure. Your hiking and travel pictures really caught my eye. Have you been on any exciting trips lately?</Text></View>
-                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text></View>
-                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
-                <View style={styles.receivedMessagesContainer}><Text style={styles.receivedMessages}>Hey there! I couldn't help but notice your profile, and I must say, you seem quite interesting. Mind if we chat?</Text></View>
-                <View style={styles.sentMessagesContainer}><Text style={styles.sentMessages}>Thank you for the kind words! I'm thrilled you share my passion for adventure. As for recent trips, I actually just returned from a hiking expedition in the Swiss Alps. The breathtaking landscapes and fresh mountain air were absolutely incredible. How about you? Any exciting journeys or outdoor experiences you'd like to share?</Text></View>
-            </ScrollView>
+            <View style={{ flex: 1 }}>
+                <FlatList
+                    data = {chatData}
+                    renderItem={renderItem}
+                    key={'+'}
+                    keyExtractor={(item) => "+" + item.msg + item.time}
+                >
+                </FlatList>
+            </View>
 
             {/* Keyboard input */}
             <Pressable style={styles.searchContainer} onPress={handleSearchPress}>
                 <View>
                     <TextInput
+                        onChangeText={text => setMessageToSend(text)}
                         style={styles.searchBox}
                         placeholder='Type Here'
                         keyboardType='web-search'
                         ref={textInputRef}
                     />
                 </View>
-                <TouchableOpacity style={{ alignItems: 'center', justifyContent: 'center' }} underlayColor='transparent'>
+                <TouchableOpacity onPress={sendMessage} style={{ alignItems: 'center', justifyContent: 'center' }} underlayColor='transparent'>
                     <View>
                         <Icon name="paper-plane" size={20} color="#5A8F7B" />
                     </View>
@@ -174,6 +242,11 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
         alignSelf: 'flex-end',
+    },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
     },
     sentMessages: {
         color: '#FFFFFF',

@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { useContext } from 'react';
 import BadgeIcon from './BadgeIcon';
 import { UserContext } from '../screens/Context/UserContext';
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, collection } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ const ScreenHeader = (props) => {
         if (auth.currentUser) {
             try {
                 const requestSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friend_requests"))
-                console.log(requestSnap.data())
+                //console.log(requestSnap.data())
                 await setUserInfo((prevUser) => ({ ...prevUser, friend_requests: requestSnap.data() }))
             }
             catch (error) {
@@ -42,7 +42,7 @@ const ScreenHeader = (props) => {
         if (auth.currentUser) {
             try {
                 const friendSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "friends"))
-                console.log(friendSnap.data())
+                //console.log(friendSnap.data())
                 await setUserInfo((prevUser) => ({ ...prevUser, friends: friendSnap.data() }))
             }
             catch (error) {
@@ -52,11 +52,12 @@ const ScreenHeader = (props) => {
 
     }
     
+    // Listens for any new chats that the user becomes a part of
     const getChats = async () => {
         if (auth.currentUser) {
             try {
                 const chatSnap = await getDoc(doc(firestore, "userInfo", auth.currentUser.uid, "pairing", "private_chats"))
-                console.log(chatSnap.data())
+                //console.log(chatSnap.data())
                 await setUserInfo((prevUser) => ({ ...prevUser, private_chats: chatSnap.data() }))
             }
             catch (error) {
