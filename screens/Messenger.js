@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, KeyboardAvo
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useRef, useEffect, useState } from 'react'
 import { auth, firestore } from '../firebase';
-import { doc, getDoc, getDocs, collection, setDoc, addDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, addDoc, query, orderBy, limit, onSnapshot, updateDoc } from 'firebase/firestore';
 
 
 export default function Messenger({ navigation, route }) {
@@ -62,6 +62,12 @@ export default function Messenger({ navigation, route }) {
                 const chatDocRef = doc(firestore, "privateChats", prop);
                 const colRef = collection(chatDocRef, "messages");
                 await addDoc(colRef, messageData);
+                // Update chat header info
+                const docRef = doc(firestore, "privateChats", prop);
+                await updateDoc(docRef, {
+                    text_last_message: messageToSend,
+                    time_last_message: currentDate,
+                })
             }
             catch(error) {
                 console.error("Error sending message:", error);
@@ -101,25 +107,25 @@ export default function Messenger({ navigation, route }) {
         }
     }
 
-    // Setup listener for new chat messages
-    useEffect(() => {
-        if (auth.currentUser) {
-            const unsubChat = onSnapshot(
-                collection(firestore, "privateChats", prop, "messages"),
-                (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "added") {
-                            console.log('NEW CHAT DOCUMENT DETECTED')
-                            getNewMessage(change);
-                        }
-                    })
-                }
-            )
-            return () => {
-                unsubChat();
-            }
-        }
-    }, [prop])
+    // // Setup listener for new chat messages
+    // useEffect(() => {
+    //     if (auth.currentUser) {
+    //         const unsubChat = onSnapshot(
+    //             collection(firestore, "privateChats", prop, "messages"),
+    //             (snapshot) => {
+    //                 snapshot.docChanges().forEach((change) => {
+    //                     if (change.type === "added") {
+    //                         console.log('NEW CHAT DOCUMENT DETECTED')
+    //                         getNewMessage(change);
+    //                     }
+    //                 })
+    //             }
+    //         )
+    //         return () => {
+    //             unsubChat();
+    //         }
+    //     }
+    // }, [prop])
 
 
     // Open keyboard for search

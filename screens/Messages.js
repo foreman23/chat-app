@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Image, Pressable, Modal, ActivityIndicator, RefreshControl, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useRef, useEffect, useState, useContext } from 'react'
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, deleteDoc, collection, query, where } from 'firebase/firestore';
 import { UserContext } from './Context/UserContext';
 
 import ScreenHeader from '../components/ScreenHeader';
@@ -30,113 +30,65 @@ export default function Messages({ navigation }) {
     if (auth.currentUser) {
       //console.log(userInfo)
       if (userInfo.private_chats.pairArr) {
-        //console.log(userInfo.private_chats.pairArr)
-        convertToNames(userInfo.private_chats.pairArr)
+        console.log(userInfo.private_chats.pairArr)
+        const chatsRef = collection(firestore, "privateChats");
+        try {
+          const msgData = []
+          const q = query(chatsRef, where("userUIDs", "array-contains", auth.currentUser.uid));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach((doc) => {
+            console.log("Chat data:", doc.data())
+            msgData.push(doc.data());
+          });
+          setMessageDataNames(msgData);
+
+        }
+        catch (error) {
+          console.error("Error finding chats for user:", error);
+        }
+        
       }
     }
   }
-
-  // Convert user uid to user names
-  const convertToNames = async (chatID) => {
-
-    //console.log(chatID)
-
-    // uidArr index 0 = matched users uids, index 1 = joint chat ids
-    const uidArr = parseChatID(chatID);
-    console.log("RETURNED PAYLOAD: ", uidArr[1])
-
-    //console.log("CHATID: ", uidArr[1])
-
-    console.log("CONVERTING UIDS TO NAMES")
-    for (let i = 0; i < uidArr[0].length; i++) {
-       if (auth.currentUser) {
-         try {
-           console.log('READING FROM FIRESTORE')
-
-           const docRef = doc(firestore, "userInfo", uidArr[0][i])
-           const docSnap = await getDoc(docRef)
-
-
-           if (docSnap.exists()) {
-             // Stores username as index 0, stores UID as index 1, stores CHATID as index 2 of subarray
-             uidArr[0][i] = [ docSnap.data().name, uidArr[0][i], uidArr[1][i] ]
-           }
-         }
-         catch (error) {
-           console.error("Error fetching document: ", error);
-         }
-       }
-     }
-    setMessageDataNames(uidArr);
-
-  }
-
-
-  // Parse the chatID from context to separate the user's ID and the matched user's ID
-  const parseChatID = (chatIDArr) => {
-
-    //console.log(chatIDArr)
-
-    // Create unbound copy of chatIDArr
-    let chatIDArrCopy = [...chatIDArr]
-
-    for (let i = 0; i < chatIDArr.length; i++){
-      let splitIDs = chatIDArr[i].split("_");
-      //console.log(splitIDs[0]) 
-      //console.log(splitIDs[1])
-      // Find matched user ID
-      theirUID = '';
-      if (auth.currentUser.uid === splitIDs[0]) {
-        theirUID = splitIDs[1];
-      }
-      else if (auth.currentUser.uid === splitIDs[1]) {
-        theirUID = splitIDs[0];
-      }
-      chatIDArr[i] = theirUID;
-    }
-    let payload = [chatIDArr, chatIDArrCopy]
-    console.log("payload", payload)
-
-    return payload;
-  }
-
-  // Set chatID state variable for modal manipulation
-  const [currentChatID, setCurrentChatID] = useState(null);
-  const setChatID = (theirUID) => {
-    if (messageDataNames[1].includes(`${theirUID}_${auth.currentUser.uid}`)) {
-      const index = messageDataNames[1].indexOf(`${theirUID}_${auth.currentUser.uid}`);
-      setCurrentChatID(messageDataNames[1][index])
-      setModalVisible(true);
-    }
-    else if (messageDataNames[1].includes(`${auth.currentUser.uid}_${theirUID}`)) {
-      const index = messageDataNames[1].indexOf(`${auth.currentUser.uid}_${theirUID}`);
-      setCurrentChatID(messageDataNames[1][index])
-      //console.log(messageDataNames[1][index])
-      setModalVisible(true);
-    }
-  }
-
 
   // Render message group
   const renderItem = ({ item }) => {
 
-    // splitIDs[0] == UID 1, splitIDs[1] == Name 1
-    // splitIDs[2] == UID 2, splitIDs[3] == Name 2
-    let splitIDs = item.split("_");
+    console.log("RENDER ITEM:", item)
 
     theirUID = '';
     theirName = '';
-    if (auth.currentUser.uid === splitIDs[0]) {
-      theirUID = splitIDs[2];
-      theirName = splitIDs[3]
+    if (auth.currentUser.uid === item.userUIDs[0]) {
+      theirUID = item.userUIDs[1];
+      theirName = item.userNames[1]
     }
-    else if (auth.currentUser.uid === splitIDs[2]) {
-      theirUID = splitIDs[0];
-      theirName = splitIDs[1]
+    else if (auth.currentUser.uid === item.userUIDs[1]) {
+      theirUID = item.userUIDs[0];
+      theirName = item.userNames[0]
+    }
+
+    // Convert timestamp to time since
+    const currentDate = new Date();
+    const timeStampDate = item.time_last_message.seconds * 1000;
+    const timeDifference = currentDate - timeStampDate;
+    console.log(Math.floor(timeDifference / (1000 * 60)))
+    const minutesSince = Math.floor(timeDifference / (1000 * 60));
+    const hoursSince = Math.floor(timeDifference / (1000 * 60 * 60));
+    const daysSince = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+    // Select best option depending on time passed
+    const timeSince = minutesSince;
+    const timeUnit = "minutes";
+    if (timeSince > 59) {
+      timeSince = hoursSince;
+      timeUnit = "hours";
+      if (timeSince > 23) {
+        timeSince = daysSince;
+        timeUnit = "days";
+      }
     }
 
     return (
-      <TouchableOpacity onLongPress={() => setChatID(item)} onPress={() => handleClick(item)} style={styles.messageGroup}>
+      <TouchableOpacity onLongPress={() => setChatID(item)} onPress={() => handleClick(item.chatID)} style={styles.messageGroup}>
         <View style={{ flex: 1 }}>
           <Image style={styles.profileImage} source={{ uri: `https://firebasestorage.googleapis.com/v0/b/chat-app-9e460.appspot.com/o/pfps%2F${theirUID}.jpg?alt=media&token=9aa7780c-39c4-4c0f-86ea-8a38756acaf6`}}></Image>
         </View>
@@ -144,13 +96,21 @@ export default function Messages({ navigation }) {
         {/* Message Content */}
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', borderWidth: 0, flex: 3, marginLeft: 5 }}>
           <Text style={{ color: '#5A8F7B', fontSize: 14, fontWeight: '600' }}>{theirName}</Text>
-          <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.message}</Text>
+          <Text style={{ color: '#323232', fontSize: 12, }} numberOfLines={2} ellipsizeMode='tail'>{item.text_last_message}</Text>
         </View>
 
         <View style={{ flexDirection: 'column', borderWidth: 0, flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 6 }}>
-          <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingRight: 5 }}>{item.status}</Text>
+          {/* <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingRight: 5 }}>{item.status}</Text> */}
           <Icon size={4} style={{ marginVertical: 5 }} name='ellipse-sharp' color='#5A8F7B'></Icon>
-          <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingLeft: 5 }}>{item.hoursSince} hr</Text>
+          {timeUnit === "minutes" && (
+            <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingLeft: 5 }}>{timeSince} min</Text>
+          )}
+          {timeUnit === "hours" && (
+            <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingLeft: 5 }}>{timeSince} hr</Text>
+          )}
+          {timeUnit === "days" && (
+            <Text style={{ color: '#5A8F7B', fontSize: 10, fontWeight: '400', paddingLeft: 5 }}>{timeSince} d</Text>
+          )}
         </View>
 
       </TouchableOpacity>
@@ -183,9 +143,9 @@ export default function Messages({ navigation }) {
   }, [messageDataNames])
 
   // On page load
-  // useEffect(() => {
-  //   grabMessageData();
-  // }, [])
+  useEffect(() => {
+    grabMessageData();
+  }, [])
 
 
   if (isLoading) {
@@ -201,20 +161,6 @@ export default function Messages({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="auto" />
       <ScreenHeader navigation={navigation} title='Messages'></ScreenHeader>
-
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <Text>Delete Conversation? {currentChatID}</Text>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={deleteConvo}>
-              <Text>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       <Pressable style={styles.searchContainer} onPress={handleSearchPress}>
         <View>
@@ -235,7 +181,7 @@ export default function Messages({ navigation }) {
 
       <View style={styles.messageList}>
         <FlatList
-          data={userInfo.private_chats.pairArr}
+          data={messageDataNames}
           renderItem={renderItem}
           key={'+'}
           keyExtractor={(item) => "+" + item}

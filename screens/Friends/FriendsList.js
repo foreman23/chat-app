@@ -81,8 +81,15 @@ const FriendsList = ({ navigation }) => {
                 })
 
                 // Create the chat document
+                const chatDocData = {
+                    userUIDs: [auth.currentUser.uid, splitIDs[0]],
+                    userNames: [userInfo.name, splitIDs[1]],
+                    time_last_message: null,
+                    text_last_message: null,
+                    chatID: chatID,
+                }
                 const chatDocRef = doc(firestore, "privateChats", chatID);
-                await setDoc(chatDocRef, {});
+                await setDoc(chatDocRef, chatDocData);
 
                 // Create the 'messages' subcollection
                 const colRef = collection(chatDocRef, "messages");
